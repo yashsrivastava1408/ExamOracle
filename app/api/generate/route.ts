@@ -48,10 +48,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json<GenerateResponse>(
             {
                 success: false,
-                error:
-                    error instanceof Error
-                        ? error.message
-                        : "Failed to generate exam prep. Please try again.",
+                error: "The ExamOracle engine experienced an issue processing your request. Please try again with shorter notes.",
             },
             { status: 500 }
         );

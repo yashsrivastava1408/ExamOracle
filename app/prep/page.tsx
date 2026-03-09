@@ -46,6 +46,9 @@ export default function PrepPage() {
     const resultPanelRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
+        // Disabled auto-hydration of cached results to prevent data leaking
+        // on shared college laptops during Pilot Phase
+        /*
         try {
             const savedResult = localStorage.getItem(LAST_RESULT_KEY);
             if (savedResult) {
@@ -63,6 +66,7 @@ export default function PrepPage() {
         } catch {
             // Ignore invalid history
         }
+        */
     }, []);
 
     const handleSubmit = async (notes: string) => {
@@ -96,7 +100,8 @@ export default function PrepPage() {
     };
 
     const persistSession = (data: GeneratedContent) => {
-        localStorage.setItem(LAST_RESULT_KEY, JSON.stringify(data));
+        // Disabled auto-persistence for Pilot Phase security
+        // localStorage.setItem(LAST_RESULT_KEY, JSON.stringify(data));
 
         const entry: SessionHistoryEntry = {
             id:
@@ -109,7 +114,8 @@ export default function PrepPage() {
 
         setHistory((current) => {
             const next = [entry, ...current].slice(0, MAX_HISTORY_ITEMS);
-            localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+            // Disabled complete history array save for Pilot Phase security 
+            // localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
             return next;
         });
     };

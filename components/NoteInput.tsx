@@ -8,8 +8,8 @@ import { useForm } from '@formspree/react';
 // Dynamically import pdf.js to keep initial bundle size down and avoid server-side issues
 const loadPdfJs = async () => {
     const pdfjs = await import("pdfjs-dist");
-    // Setup worker
-    pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+    // Setup worker natively instead of relying on external CDN
+    pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
     return pdfjs;
 };
 
