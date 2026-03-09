@@ -3,7 +3,6 @@
 import { useState, useRef } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { CopyPlus, Sparkles, FileText, UploadCloud, AlertTriangle, X, Mail, CheckCircle } from "lucide-react";
-import { useForm } from '@formspree/react';
 
 // Dynamically import pdf.js to keep initial bundle size down and avoid server-side issues
 const loadPdfJs = async () => {
@@ -86,7 +85,7 @@ export default function NoteInput({ onSubmit, isLoading }: NoteInputProps) {
             } else {
                 setFormStatus('success'); // Fallback if API refuses
             }
-        } catch (error) {
+        } catch {
             setFormStatus('success');
         }
     };
@@ -118,7 +117,8 @@ export default function NoteInput({ onSubmit, isLoading }: NoteInputProps) {
             for (let i = 1; i <= numPages; i++) {
                 const page = await document.getPage(i);
                 const textContent = await page.getTextContent();
-                const pageText = textContent.items.map((item: any) => item.str).join(" ");
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const pageText = textContent.items.map((item: any) => 'str' in item ? item.str : '').join(" ");
                 extractedText += pageText + "\n";
 
                 // Break early if we hit the limit to save memory/processing
@@ -230,7 +230,7 @@ export default function NoteInput({ onSubmit, isLoading }: NoteInputProps) {
                                     <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
                                         <CheckCircle className="w-4 h-4 text-emerald-400" />
                                     </div>
-                                    <p className="text-sm font-medium text-emerald-400 text-left">You're on the list! Keep an eye on your inbox for the 50% discount.</p>
+                                    <p className="text-sm font-medium text-emerald-400 text-left">You&apos;re on the list! Keep an eye on your inbox for the 50% discount.</p>
                                 </div>
                             ) : (
                                 <form onSubmit={handleWaitlistSubmit} className="w-full flex gap-2">

@@ -143,9 +143,9 @@ export default function Home() {
               </motion.div>
             </div>
 
-            {/* Right side image */}
             <motion.div variants={FADE_UP_ANIMATION_VARIANTS} className="relative mx-auto w-full lg:mx-0 mt-20 lg:-mt-32 flex items-center justify-center lg:justify-end">
               <div className="relative w-full max-w-[500px] flex items-center justify-center scale-100 lg:scale-[1.3] lg:translate-x-0 -translate-y-12 lg:-translate-y-16 pointer-events-none">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/logo.png"
                   alt="ExamOracle Logo"

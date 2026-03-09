@@ -9,6 +9,7 @@ export default function SplashScreen() {
 
     useEffect(() => {
         if (sessionStorage.getItem("splash_seen")) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setShow(false);
             setTimeout(() => {
                 window.dispatchEvent(new Event("splashComplete"));
