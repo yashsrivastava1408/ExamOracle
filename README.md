@@ -20,6 +20,17 @@ ExamOracle solves this by shifting the paradigm from manual review to programmat
 
 ---
 
+## Screenshots
+
+<!-- Add your UI screenshots below when uploading to GitHub -->
+<!-- Example: ![Dashboard View](./screenshots/dashboard.png) -->
+
+*(Placeholder for UI Screenshot 1)*
+
+*(Placeholder for UI Screenshot 2)*
+
+---
+
 ## Architecture
 
 ExamOracle is built with a highly optimized, fully client-side interface coupled with a serverless edge backend to minimize latency and operational costs during the pilot phase.
