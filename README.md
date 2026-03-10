@@ -21,9 +21,12 @@ ExamOracle solves this by shifting the paradigm from manual review to programmat
 ---
 
 ## Screenshots
-<img width="1709" height="976" alt="Screenshot 2026-03-10 at 12 04 35 PM" src="https://github.com/user-attachments/assets/4cdc64ab-ecd1-4bd7-bc2e-f06a21449875" />
-<img width="1710" height="964" alt="Screenshot 2026-03-10 at 12 04 54 PM" src="https://github.com/user-attachments/assets/a89ceb0e-12b5-4e88-8906-139e2ecf9ae1" />
-<img width="1702" height="973" alt="Screenshot 2026-03-10 at 12 05 25 PM" src="https://github.com/user-attachments/assets/7d24998a-f7ea-4f1b-83bb-98d40195c08f" />
+<div align="center">
+  <img width="49%" alt="Screenshot 2026-03-10 at 12 04 35 PM" src="https://github.com/user-attachments/assets/4cdc64ab-ecd1-4bd7-bc2e-f06a21449875" />
+  <img width="49%" alt="Screenshot 2026-03-10 at 12 04 54 PM" src="https://github.com/user-attachments/assets/a89ceb0e-12b5-4e88-8906-139e2ecf9ae1" />
+  <br/>
+  <img width="49%" alt="Screenshot 2026-03-10 at 12 05 25 PM" src="https://github.com/user-attachments/assets/7d24998a-f7ea-4f1b-83bb-98d40195c08f" />
+</div>
 
 
 ---
