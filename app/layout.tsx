@@ -1,18 +1,7 @@
 import type { Metadata } from "next";
-import { Inter, Sora } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 import SplashScreen from "@/components/SplashScreen";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
-});
-
-const sora = Sora({
-  subsets: ["latin"],
-  variable: "--font-display",
-});
 
 export const metadata: Metadata = {
   title: "ExamOracle — Paste your notes. Own your exam.",
@@ -48,7 +37,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.variable} ${sora.variable} antialiased`}>
+      <body className="antialiased">
         <SplashScreen />
         {children}
         <Analytics />

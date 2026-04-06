@@ -98,13 +98,17 @@ Implemented now:
 - flashcards UI
 - quiz UI
 - summary UI
-- localStorage persistence for last generated result
+- local in-memory recent session history on the prep page
+- Prisma-backed anonymous community
+- server-owned anonymous identity via cookie + hashed identifier
+- post and comment voting
+- post and comment reporting with auto-hide / auto-block rules
 
 Planned but not actually implemented yet:
 
 - Supabase
 - authentication
-- saved history
+- saved history across browser restarts for prep flow
 - user dashboard
 - returning-user account flows
 - backup LLM provider

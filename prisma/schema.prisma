@@ -1,0 +1,125 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Alias {
+  id           String     @id @default(cuid())
+  name         String     @unique
+  clientIdHash String?    @unique
+  isBlocked    Boolean    @default(false)
+  blockedAt    DateTime?
+  createdAt    DateTime   @default(now())
+  
+  posts        Post[]
+  comments     Comment[]
+  postVotes    PostVote[]
+  commentVotes CommentVote[]
+  postReports  PostReport[]
+  commentReports CommentReport[]
+}
+
+model Post {
+  id          String     @id @default(cuid())
+  signalType  String     @default("doubt")
+  title       String
+  content     String
+  subjectTag  String?
+  locationHint String?
+  quietLevel  Int?
+  hotTakeScore Int?
+  expiresAt   DateTime?
+  isPinned    Boolean    @default(false)
+  upvotes     Int        @default(0)
+  downvotes   Int        @default(0)
+  reportCount Int        @default(0)
+  isHidden    Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+
+  aliasId     String
+  alias       Alias      @relation(fields: [aliasId], references: [id], onDelete: Cascade)
+  
+  comments    Comment[]
+  votes       PostVote[]
+  reports     PostReport[]
+}
+
+model Comment {
+  id        String        @id @default(cuid())
+  content   String
+  upvotes   Int           @default(0)
+  downvotes Int           @default(0)
+  reportCount Int         @default(0)
+  isHidden  Boolean       @default(false)
+  createdAt DateTime      @default(now())
+
+  postId    String
+  post      Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  aliasId   String
+  alias     Alias         @relation(fields: [aliasId], references: [id], onDelete: Cascade)
+
+  votes     CommentVote[]
+  reports   CommentReport[]
+}
+
+model PostVote {
+  id        String   @id @default(cuid())
+  value     Int
+  createdAt DateTime @default(now())
+
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  aliasId   String
+  alias     Alias    @relation(fields: [aliasId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, aliasId])
+}
+
+model CommentVote {
+  id        String   @id @default(cuid())
+  value     Int
+  createdAt DateTime @default(now())
+
+  commentId String
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  aliasId   String
+  alias     Alias    @relation(fields: [aliasId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, aliasId])
+}
+
+model PostReport {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  aliasId   String
+  alias     Alias    @relation(fields: [aliasId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, aliasId])
+}
+
+model CommentReport {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  commentId String
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  aliasId   String
+  alias     Alias    @relation(fields: [aliasId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, aliasId])
+}

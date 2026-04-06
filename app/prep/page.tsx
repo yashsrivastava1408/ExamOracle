@@ -26,6 +26,7 @@ import ExamOracle from "@/components/ExamOracle";
 import Flashcards from "@/components/Flashcards";
 import QuizSection from "@/components/QuizSection";
 import Summary from "@/components/Summary";
+import PrepSignals from "@/components/PrepSignals";
 import FeatureOverview, { FeatureOverviewItem } from "@/components/FeatureOverview";
 import SessionHistory, { SessionHistoryEntry } from "@/components/SessionHistory";
 import { GeneratedContent } from "@/types";
@@ -40,6 +41,7 @@ export default function PrepPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [result, setResult] = useState<GeneratedContent | null>(null);
+    const [lastNotes, setLastNotes] = useState("");
     const [activeTab, setActiveTab] = useState<ActiveTab | null>(null);
     const [history, setHistory] = useState<SessionHistoryEntry[]>([]);
     const noteInputRef = useRef<HTMLDivElement | null>(null);
@@ -73,6 +75,7 @@ export default function PrepPage() {
         setIsLoading(true);
         setError(null);
         setResult(null);
+        setLastNotes(notes);
 
         try {
             const response = await fetch("/api/generate", {
@@ -122,11 +125,13 @@ export default function PrepPage() {
 
     const handleClearResults = () => {
         setResult(null);
+        setLastNotes("");
         localStorage.removeItem(LAST_RESULT_KEY);
     };
 
     const restoreSession = (entry: SessionHistoryEntry) => {
         setResult(entry.data);
+        setLastNotes("");
         setActiveTab(null);
         localStorage.setItem(LAST_RESULT_KEY, JSON.stringify(entry.data));
     };
@@ -588,6 +593,8 @@ export default function PrepPage() {
                                     })}
                                 </div>
                             </section>
+
+                            <PrepSignals notes={lastNotes} result={result} />
 
                             <div className="flex gap-2 overflow-x-auto rounded-2xl border border-white/[0.08] bg-[#07111d]/80 p-2 backdrop-blur-xl">
                                 {tabs.map((tab) => (

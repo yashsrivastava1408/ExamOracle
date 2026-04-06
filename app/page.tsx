@@ -79,10 +79,15 @@ export default function Home() {
             </div>
             <span className="text-lg font-semibold tracking-tight">ExamOracle</span>
           </div>
-          <Link href="/prep" className="group flex items-center gap-2 h-9 px-4 rounded-full bg-white text-black text-sm font-semibold hover:bg-zinc-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.15)]">
-            Start Prepping
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-          </Link>
+          <div className="flex items-center gap-6">
+            <Link href="/community" className="text-sm font-semibold text-white/70 hover:text-white transition-colors">
+              Community
+            </Link>
+            <Link href="/prep" className="group flex items-center gap-2 h-9 px-4 rounded-full bg-white text-black text-sm font-semibold hover:bg-zinc-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.15)]">
+              Start Prepping
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+          </div>
         </div>
       </motion.nav>
 
