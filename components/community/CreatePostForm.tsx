@@ -12,6 +12,7 @@ import {
   NotebookPen,
   Send,
   ShieldAlert,
+  BarChart2,
   Siren,
   X,
 } from "lucide-react";
@@ -74,6 +75,13 @@ const signalTypes = [
     accent: "text-orange-200 border-orange-300/20 bg-orange-400/10",
     description: "Time-sensitive campus signal like quiz whispers or lab-file checks.",
   },
+  {
+    key: "poll",
+    label: "Poll",
+    icon: BarChart2,
+    accent: "text-blue-200 border-blue-300/20 bg-blue-400/10",
+    description: "Get anonymous consensus on a course, exam, or topic.",
+  },
 ] as const;
 
 type SignalType = (typeof signalTypes)[number]["key"];
@@ -81,15 +89,35 @@ type SignalType = (typeof signalTypes)[number]["key"];
 export default function CreatePostForm({
   aliasName,
   isOpen,
+  mode = "oracle", // "oracle" or "whisper"
   onClose,
   onPostCreated,
 }: {
   aliasName: string;
   isOpen: boolean;
+  mode?: "oracle" | "whisper";
   onClose: () => void;
   onPostCreated: () => void;
 }) {
-  const [signalType, setSignalType] = useState<SignalType>("doubt");
+  const oracleSignals = [
+    "warning",
+    "resource",
+    "doubt",
+    "library_live",
+    "survival_thread",
+    "poll",
+  ];
+  const whisperSignals = ["confession", "hot_take", "intel_drop"];
+
+  const filteredSignalTypes = signalTypes.filter((s) =>
+    mode === "whisper"
+      ? whisperSignals.includes(s.key)
+      : oracleSignals.includes(s.key)
+  );
+
+  const [signalType, setSignalType] = useState<SignalType>(
+    mode === "whisper" ? "confession" : "doubt"
+  );
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [subjectTag, setSubjectTag] = useState("");
@@ -97,6 +125,7 @@ export default function CreatePostForm({
   const [quietLevel, setQuietLevel] = useState(3);
   const [hotTakeScore, setHotTakeScore] = useState(7);
   const [expiresInHours, setExpiresInHours] = useState(12);
+  const [pollOptions, setPollOptions] = useState<string[]>(["", ""]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -104,7 +133,7 @@ export default function CreatePostForm({
   const CurrentSignalIcon = currentSignal.icon;
 
   const resetForm = () => {
-    setSignalType("doubt");
+    setSignalType(mode === "whisper" ? "confession" : "doubt");
     setTitle("");
     setContent("");
     setSubjectTag("");
@@ -112,12 +141,20 @@ export default function CreatePostForm({
     setQuietLevel(3);
     setHotTakeScore(7);
     setExpiresInHours(12);
+    setPollOptions(["", ""]);
     setError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !content.trim()) return;
+    if (signalType === "poll") {
+      const validOptions = pollOptions.filter(o => o.trim().length > 0);
+      if (validOptions.length < 2) {
+        setError("Polls require at least 2 valid options");
+        return;
+      }
+    }
 
     setIsSubmitting(true);
     setError(null);
@@ -134,6 +171,7 @@ export default function CreatePostForm({
           quietLevel,
           hotTakeScore,
           expiresInHours,
+          pollOptions: signalType === "poll" ? pollOptions : undefined,
         }),
       });
 
@@ -163,29 +201,52 @@ export default function CreatePostForm({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-[#050914]/85 p-4 backdrop-blur-md"
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 p-4 backdrop-blur-md"
         >
           <motion.form
-            initial={{ opacity: 0, y: 24, scale: 0.98 }}
+            initial={{ opacity: 0, y: 30, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 18, scale: 0.98 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
             onSubmit={handleSubmit}
-            className="relative w-full max-w-4xl overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(155deg,rgba(56,189,248,0.14),rgba(255,255,255,0.05)_35%,rgba(10,10,10,0.96)_100%)] p-6 shadow-2xl"
+            className={`relative w-full max-w-4xl max-h-[90vh] overflow-y-auto overflow-x-hidden rounded-[24px] border border-white/10 p-8 shadow-[0_0_80px_rgba(0,0,0,0.5)] ${
+              mode === "whisper"
+                ? "bg-[#0b0416] border-fuchsia-500/20 shadow-fuchsia-500/10"
+                : "bg-[#050914] border-white/10"
+            }`}
           >
-            <div className="absolute right-0 top-0 h-56 w-56 rounded-full bg-cyan-400/10 blur-3xl" />
-            <div className="absolute bottom-0 left-0 h-56 w-56 rounded-full bg-fuchsia-500/10 blur-3xl" />
+            {mode === "whisper" && (
+              <>
+                <div className="absolute right-[-10%] top-[-10%] h-[300px] w-[300px] rounded-full bg-fuchsia-500/10 blur-[80px] pointer-events-none animate-pulse" />
+                <div className="absolute bottom-[-10%] left-[-10%] h-[300px] w-[300px] rounded-full bg-violet-600/10 blur-[80px] pointer-events-none" />
+              </>
+            )}
+            {mode !== "whisper" && (
+              <>
+                <div className="absolute right-[-10%] top-[-10%] h-[300px] w-[300px] rounded-full bg-indigo-500/10 blur-[80px] pointer-events-none" />
+                <div className="absolute bottom-[-10%] left-[-10%] h-[300px] w-[300px] rounded-full bg-emerald-500/5 blur-[80px] pointer-events-none" />
+              </>
+            )}
 
             <div className="relative z-10">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-xs font-medium text-emerald-300">
+                  <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold ${
+                    mode === "whisper"
+                      ? "border-fuchsia-500/20 bg-fuchsia-500/10 text-fuchsia-300"
+                      : "border-indigo-500/20 bg-indigo-500/10 text-indigo-300"
+                  }`}>
                     <ShieldAlert className="h-4 w-4" />
-                    Posting securely as <span className="font-bold">{aliasName}</span>
+                    Posting securely as <span className={`font-bold text-white`}>{aliasName}</span>
                   </div>
-                  <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white">
-                    Drop a campus signal
+                  <h2 className={`mt-5 text-3xl font-semibold tracking-tight ${
+                    mode === "whisper"
+                      ? "bg-gradient-to-r from-fuchsia-400 to-violet-300 bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(192,38,211,0.4)]"
+                      : "text-white/90"
+                  }`}>
+                    {mode === "whisper" ? "Spill the Tea" : "Start a discussion"}
                   </h2>
-                  <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/55">
+                  <p className="mt-2 max-w-2xl text-[14px] leading-relaxed text-white/50 font-light">
                     Pick the shape of the signal first, then make it useful. The board
                     is strongest when each thread has a clear purpose.
                   </p>
@@ -196,14 +257,14 @@ export default function CreatePostForm({
                     resetForm();
                     onClose();
                   }}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
 
-              <div className="mt-8 grid gap-3 md:grid-cols-4">
-                {signalTypes.map((item) => {
+              <div className="mt-8 grid gap-4 grid-cols-2 md:grid-cols-3">
+                {filteredSignalTypes.map((item) => {
                   const Icon = item.icon;
                   const isActive = signalType === item.key;
 
@@ -212,17 +273,19 @@ export default function CreatePostForm({
                       key={item.key}
                       type="button"
                       onClick={() => setSignalType(item.key)}
-                      className={`rounded-[1.35rem] border p-4 text-left transition-all ${
+                      className={`relative overflow-hidden rounded-[20px] border p-4 text-left transition-all duration-300 ${
                         isActive
-                          ? `${item.accent} shadow-lg`
-                          : "border-white/10 bg-black/20 text-white/70 hover:bg-black/30"
+                          ? mode === "whisper"
+                            ? "border-fuchsia-500 shadow-[0_0_30px_rgba(192,38,211,0.2)] bg-fuchsia-500/10 scale-105"
+                            : "border-indigo-500/40 bg-indigo-500/[0.08] shadow-[0_0_20px_rgba(99,102,241,0.1)] scale-105"
+                          : "border-white/5 bg-white/[0.02] text-white/50 hover:bg-white/[0.04] hover:text-white/80 hover:border-white/10"
                       }`}
                     >
-                      <div className="flex items-center gap-2">
-                        <Icon className="h-4.5 w-4.5" />
+                      <div className={`flex items-center gap-2 ${isActive ? (mode === "whisper" ? "text-fuchsia-300" : "text-indigo-300") : ""}`}>
+                        <Icon className="h-[18px] w-[18px]" />
                         <span className="text-sm font-semibold">{item.label}</span>
                       </div>
-                      <p className="mt-2 text-xs leading-relaxed opacity-80">
+                      <p className="mt-2 text-[11px] leading-relaxed opacity-70 font-light">
                         {item.description}
                       </p>
                     </button>
@@ -230,19 +293,23 @@ export default function CreatePostForm({
                 })}
               </div>
 
-              <div className="mt-6 rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
-                <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold ${currentSignal.accent}`}>
-                  <CurrentSignalIcon className="h-4 w-4" />
+              <div className="mt-6 rounded-[24px] border border-white/5 bg-white/[0.015] p-6 shadow-inner">
+                <div className={`inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white/70`}>
+                  <CurrentSignalIcon className="h-3 w-3" />
                   {currentSignal.label} mode
                 </div>
 
-                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                <div className="mt-5 grid gap-5 md:grid-cols-2">
                   <input
                     type="text"
                     placeholder="A sharp title..."
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="w-full rounded-[1.1rem] border border-white/10 bg-black/25 px-5 py-4 text-lg font-semibold text-white outline-none transition-colors placeholder:text-white/25 focus:border-cyan-300/30"
+                    className={`w-full rounded-[16px] border border-white/[0.06] bg-black/40 px-5 py-4 text-lg font-medium text-white outline-none transition-all placeholder:text-white/20 ${
+                      mode === "whisper"
+                        ? "focus:border-fuchsia-400/40 focus:bg-fuchsia-500/[0.02] focus:shadow-[0_0_20px_rgba(192,38,211,0.1)]"
+                        : "focus:border-indigo-500/40 focus:bg-indigo-500/[0.02]"
+                    }`}
                     maxLength={120}
                     disabled={isSubmitting}
                   />
@@ -252,7 +319,11 @@ export default function CreatePostForm({
                     placeholder="Subject or course tag, e.g. DBMS / Mechanics"
                     value={subjectTag}
                     onChange={(e) => setSubjectTag(e.target.value)}
-                    className="w-full rounded-[1.1rem] border border-white/10 bg-black/25 px-5 py-4 text-sm text-white outline-none transition-colors placeholder:text-white/25 focus:border-cyan-300/30"
+                    className={`w-full rounded-[16px] border border-white/[0.06] bg-black/40 px-5 py-4 text-[14px] text-white outline-none transition-all placeholder:text-white/20 ${
+                      mode === "whisper"
+                        ? "focus:border-fuchsia-400/40 focus:bg-fuchsia-500/[0.02] focus:shadow-[0_0_20px_rgba(192,38,211,0.1)]"
+                        : "focus:border-indigo-500/40 focus:bg-indigo-500/[0.02]"
+                    }`}
                     maxLength={40}
                     disabled={isSubmitting}
                   />
@@ -262,27 +333,77 @@ export default function CreatePostForm({
                   placeholder="What happened, what is the issue, or what should people know?"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  className="mt-4 min-h-[180px] w-full resize-y rounded-[1.4rem] border border-white/10 bg-black/25 p-5 text-sm leading-relaxed text-white/90 outline-none transition-colors placeholder:text-white/25 focus:border-cyan-300/30"
+                  className={`mt-5 min-h-[160px] w-full resize-y rounded-[16px] border border-white/[0.06] bg-black/40 p-5 text-[14px] leading-relaxed text-white/90 outline-none transition-all placeholder:text-white/20 ${
+                    mode === "whisper"
+                      ? "focus:border-fuchsia-400/40 focus:bg-fuchsia-500/[0.02] focus:shadow-[0_0_20px_rgba(192,38,211,0.1)]"
+                      : "focus:border-indigo-500/40 focus:bg-indigo-500/[0.02]"
+                  }`}
                   maxLength={2000}
                   disabled={isSubmitting}
                 />
 
-                <div className="mt-4 grid gap-4 md:grid-cols-3">
+                {signalType === "poll" && (
+                  <div className="mt-5 space-y-3">
+                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 px-2">Poll Options</div>
+                    {pollOptions.map((opt, i) => (
+                      <div key={i} className="flex items-center gap-3">
+                        <input
+                          type="text"
+                          placeholder={`Option ${i + 1}`}
+                          value={opt}
+                          onChange={e => {
+                            const newOpts = [...pollOptions];
+                            newOpts[i] = e.target.value;
+                            setPollOptions(newOpts);
+                          }}
+                          className="w-full rounded-[16px] border border-white/[0.06] bg-black/40 px-5 py-3.5 text-[14px] text-white outline-none transition-colors placeholder:text-white/20 focus:border-blue-500/40 focus:bg-blue-500/[0.02]"
+                          maxLength={50}
+                          disabled={isSubmitting}
+                        />
+                        {pollOptions.length > 2 && (
+                          <button
+                            type="button"
+                            onClick={() => setPollOptions(pollOptions.filter((_, idx) => idx !== i))}
+                            className="text-white/30 hover:text-rose-400 transition-colors"
+                            disabled={isSubmitting}
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    {pollOptions.length < 4 && (
+                      <button
+                        type="button"
+                        onClick={() => setPollOptions([...pollOptions, ""])}
+                        className="text-[12px] font-semibold text-blue-400 hover:text-blue-300 px-2 transition-colors"
+                        disabled={isSubmitting}
+                      >
+                        + Add Option
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                <div className="mt-5 grid gap-5 md:grid-cols-3">
                   {(signalType === "library_live" || signalType === "intel_drop") && (
                     <input
                       type="text"
                       placeholder={signalType === "library_live" ? "Location hint, e.g. Central Library 3F" : "Where did this happen?"}
                       value={locationHint}
                       onChange={(e) => setLocationHint(e.target.value)}
-                      className="rounded-[1.1rem] border border-white/10 bg-black/25 px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-white/25 focus:border-cyan-300/30 md:col-span-2"
-                      maxLength={80}
+                    className={`rounded-[16px] border border-white/[0.06] bg-black/40 px-5 py-3.5 text-[14px] text-white outline-none transition-all placeholder:text-white/20 md:col-span-2 ${
+                        mode === "whisper"
+                          ? "focus:border-fuchsia-500/40 focus:bg-fuchsia-500/[0.02] focus:shadow-[0_0_15px_rgba(192,38,211,0.1)]"
+                          : "focus:border-indigo-500/40 focus:bg-indigo-500/[0.02]"
+                      }`}                      maxLength={80}
                       disabled={isSubmitting}
                     />
                   )}
 
                   {signalType === "library_live" && (
-                    <label className="rounded-[1.1rem] border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
-                      <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/35">
+                    <label className="rounded-[16px] border border-white/[0.06] bg-black/40 px-5 py-3.5 text-[14px] text-white/70">
+                      <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">
                         Quiet Meter
                       </div>
                       <input
@@ -291,18 +412,18 @@ export default function CreatePostForm({
                         max={5}
                         value={quietLevel}
                         onChange={(e) => setQuietLevel(Number(e.target.value))}
-                        className="mt-3 w-full accent-cyan-300"
+                        className="mt-3 w-full accent-indigo-400"
                         disabled={isSubmitting}
                       />
-                      <div className="mt-2 text-sm font-semibold text-white">
+                      <div className="mt-2 text-xs font-semibold text-white/90">
                         {quietLevel} / 5
                       </div>
                     </label>
                   )}
 
                   {signalType === "hot_take" && (
-                    <label className="rounded-[1.1rem] border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
-                      <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/35">
+                    <label className="rounded-[16px] border border-white/[0.06] bg-black/40 px-5 py-3.5 text-[14px] text-white/70">
+                      <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">
                         Hot Take Meter
                       </div>
                       <input
@@ -311,28 +432,28 @@ export default function CreatePostForm({
                         max={10}
                         value={hotTakeScore}
                         onChange={(e) => setHotTakeScore(Number(e.target.value))}
-                        className="mt-3 w-full accent-rose-300"
+                        className="mt-3 w-full accent-rose-400"
                         disabled={isSubmitting}
                       />
-                      <div className="mt-2 text-sm font-semibold text-white">
+                      <div className="mt-2 text-xs font-semibold text-white/90">
                         {hotTakeScore} / 10
                       </div>
                     </label>
                   )}
 
                   {signalType === "intel_drop" && (
-                    <label className="rounded-[1.1rem] border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
-                      <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/35">
+                    <label className="rounded-[16px] border border-white/[0.06] bg-black/40 px-5 py-3.5 text-[14px] text-white/70">
+                      <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">
                         Expires In
                       </div>
                       <select
                         value={expiresInHours}
                         onChange={(e) => setExpiresInHours(Number(e.target.value))}
-                        className="mt-3 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-white outline-none"
+                        className="mt-3 w-full rounded-lg border border-transparent bg-white/5 px-3 py-2 text-[13px] text-white outline-none focus:border-indigo-500/40"
                         disabled={isSubmitting}
                       >
                         {[2, 6, 12, 24, 48, 72].map((hours) => (
-                          <option key={hours} value={hours}>
+                          <option key={hours} value={hours} className="bg-[#050914]">
                             {hours} hours
                           </option>
                         ))}
@@ -341,26 +462,32 @@ export default function CreatePostForm({
                   )}
                 </div>
 
-                <div className="mt-4 flex items-center justify-between gap-4 text-xs text-white/40">
-                  <span>{content.length} / 2000</span>
-                  <span>{title.length} / 120</span>
+                <div className="mt-5 flex items-center justify-between gap-4 text-[11px] font-medium text-white/30 px-2">
+                  <span>{content.length} / 2000 chars</span>
+                  <span>{title.length} / 120 chars</span>
                 </div>
 
-                {error && <p className="mt-4 text-sm text-rose-300">{error}</p>}
+                {error && <p className="mt-4 text-[13px] font-medium text-rose-400 px-2">{error}</p>}
 
-                <div className="mt-6 flex justify-end">
-                  <button
+                <div className="mt-8 flex justify-end">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     type="submit"
                     disabled={isSubmitting || !title.trim() || !content.trim()}
-                    className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-40"
+                    className={`inline-flex h-12 items-center justify-center gap-2 rounded-full px-8 text-[14px] font-bold transition-all disabled:opacity-30 disabled:active:scale-100 ${
+                      mode === "whisper"
+                        ? "bg-gradient-to-r from-fuchsia-500 via-fuchsia-600 to-violet-600 text-white shadow-[0_0_30px_rgba(192,38,211,0.4)] hover:shadow-[0_0_45px_rgba(192,38,211,0.6)] animate-pulse"
+                        : "bg-white text-[#03060c] hover:bg-indigo-50"
+                    }`}
                   >
                     {isSubmitting ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="h-[18px] w-[18px] animate-spin" />
                     ) : (
-                      <Send className="h-4 w-4" />
+                      <Send className="h-[18px] w-[18px]" />
                     )}
-                    Publish Signal
-                  </button>
+                    {mode === "whisper" ? "Spill Confession" : "Publish Discussion"}
+                  </motion.button>
                 </div>
               </div>
             </div>

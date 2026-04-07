@@ -12,16 +12,38 @@ type VoteAction = "upvote" | "downvote";
 
 export const POST_INCLUDE = {
   alias: {
-    select: { name: true },
+    select: { 
+      name: true,
+      posts: {
+        where: { upvotes: { gte: 20 } },
+        take: 1,
+        select: { id: true }
+      }
+    },
   },
   _count: {
     select: { comments: true },
   },
+  pollOptions: {
+    include: {
+      _count: { select: { votes: true } }
+    }
+  },
+  whisperVotes: {
+    select: { value: true, aliasId: true }
+  }
 } as const;
 
 export const COMMENT_INCLUDE = {
   alias: {
-    select: { name: true },
+    select: { 
+      name: true,
+      posts: {
+        where: { upvotes: { gte: 20 } },
+        take: 1,
+        select: { id: true }
+      }
+    },
   },
 } as const;
 
@@ -34,45 +56,91 @@ function assertAliasCanParticipate(alias: { isBlocked: boolean }) {
 function normalizePostPayload<T extends {
   votes?: Array<{ aliasId: string; value: number }>;
   reports?: Array<{ aliasId: string }>;
+  pollVotes?: Array<{ pollOptionId: string }>;
+  alias: { name: string; posts?: Array<{ id: string }> };
 }>(post: T, aliasId?: string) {
+  const { alias, ...rest } = post;
   return {
-    ...post,
+    ...rest,
+    alias: {
+      name: alias.name,
+      hasGuruBadge: alias.posts && alias.posts.length > 0,
+    },
     viewerVote:
       aliasId == null
         ? 0
-        : post.votes?.find((vote) => vote.aliasId === aliasId)?.value ?? 0,
+        : rest.votes?.find((vote) => vote.aliasId === aliasId)?.value ?? 0,
     viewerReported:
       aliasId == null
         ? false
-        : (post.reports?.some((report) => report.aliasId === aliasId) ?? false),
+        : (rest.reports?.some((report) => report.aliasId === aliasId) ?? false),
+    viewerPollVoteId:
+      aliasId == null
+        ? null
+        : (rest.pollVotes?.[0]?.pollOptionId ?? null),
+    whisperStats: (() => {
+      const votes = (rest as any).whisperVotes || [];
+      const total = votes.length;
+      return {
+        total,
+        true: votes.filter((v: any) => v.value === "TRUE").length,
+        cap: votes.filter((v: any) => v.value === "CAP").length,
+        idk: votes.filter((v: any) => v.value === "IDK").length,
+      };
+    })(),
+    viewerWhisperVote:
+      aliasId == null
+        ? null
+        : ((rest as any).whisperVotes?.find((v: any) => v.aliasId === aliasId)?.value ?? null),
   };
 }
 
 function normalizeCommentPayload<T extends {
   votes?: Array<{ aliasId: string; value: number }>;
   reports?: Array<{ aliasId: string }>;
+  alias: { name: string; posts?: Array<{ id: string }> };
 }>(comment: T, aliasId?: string) {
+  const { alias, ...rest } = comment;
   return {
-    ...comment,
+    ...rest,
+    alias: {
+      name: alias.name,
+      hasGuruBadge: alias.posts && alias.posts.length > 0,
+    },
     viewerVote:
       aliasId == null
         ? 0
-        : comment.votes?.find((vote) => vote.aliasId === aliasId)?.value ?? 0,
+        : rest.votes?.find((vote) => vote.aliasId === aliasId)?.value ?? 0,
     viewerReported:
       aliasId == null
         ? false
-        : (comment.reports?.some((report) => report.aliasId === aliasId) ?? false),
+        : (rest.reports?.some((report) => report.aliasId === aliasId) ?? false),
   };
 }
 
 export async function fetchCommunityPosts(input?: {
   aliasId?: string;
   sort?: SortKey;
+  tab?: "oracle" | "whisper";
 }) {
+  const oracleSignals = [
+    "warning",
+    "resource",
+    "doubt",
+    "library_live",
+    "survival_thread",
+    "poll",
+  ];
+  const whisperSignals = ["confession", "hot_take", "intel_drop"];
+
   const posts = await prisma.post.findMany({
     where: {
       isHidden: false,
       OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      signalType:
+        input?.tab === "whisper"
+          ? { in: whisperSignals }
+          : { in: oracleSignals },
     },
     include: {
       ...POST_INCLUDE,
@@ -88,10 +156,18 @@ export async function fetchCommunityPosts(input?: {
             select: { aliasId: true },
           }
         : false,
+      // @ts-ignore
+      pollVotes: input?.aliasId
+        ? {
+            where: { aliasId: input.aliasId },
+            select: { pollOptionId: true },
+          }
+        : false,
     },
   });
 
   const sorted = sortCommunityPosts(posts, input?.sort ?? "latest");
+  // @ts-ignore
   return sorted.map((post) => normalizePostPayload(post, input?.aliasId));
 }
 
@@ -104,6 +180,7 @@ export async function createCommunityPost(input: {
   quietLevel?: number | null;
   hotTakeScore?: number | null;
   expiresInHours?: number | null;
+  pollOptions?: string[];
   aliasId: string;
 }) {
   const signalType = input.signalType.trim();
@@ -115,6 +192,7 @@ export async function createCommunityPost(input: {
   const quietLevel = input.quietLevel ?? null;
   const hotTakeScore = input.hotTakeScore ?? null;
   const expiresInHours = input.expiresInHours ?? null;
+  const submittedPollOptions = input.pollOptions?.map(o => o.trim()).filter(o => o.length > 0) || [];
 
   const validSignalTypes = new Set([
     "confession",
@@ -125,6 +203,7 @@ export async function createCommunityPost(input: {
     "library_live",
     "survival_thread",
     "intel_drop",
+    "poll",
   ]);
 
   if (!aliasId || !signalType || !validSignalTypes.has(signalType)) {
@@ -155,6 +234,10 @@ export async function createCommunityPost(input: {
     throw new Error("Survival threads need a subject tag");
   }
 
+  if (signalType === "poll" && submittedPollOptions.length < 2) {
+    throw new Error("Polls require at least 2 valid options");
+  }
+
   const alias = await prisma.alias.findUnique({
     where: { id: aliasId },
     select: { isBlocked: true },
@@ -181,6 +264,9 @@ export async function createCommunityPost(input: {
           : null,
       isPinned: signalType === "survival_thread",
       aliasId,
+      pollOptions: signalType === "poll" && submittedPollOptions.length > 0 ? {
+        create: submittedPollOptions.map(text => ({ text }))
+      } : undefined,
     },
     include: {
       ...POST_INCLUDE,
@@ -192,9 +278,15 @@ export async function createCommunityPost(input: {
         where: { aliasId },
         select: { aliasId: true },
       },
+      // @ts-ignore
+      pollVotes: {
+        where: { aliasId },
+        select: { pollOptionId: true },
+      },
     },
   });
 
+  // @ts-ignore
   return normalizePostPayload(post, aliasId);
 }
 
@@ -281,6 +373,7 @@ export async function createPostComment(input: {
     },
   });
 
+  // @ts-ignore
   return normalizeCommentPayload(comment, aliasId);
 }
 
@@ -313,8 +406,14 @@ async function applyVoteToPost(input: {
           where: { aliasId: input.aliasId },
           select: { aliasId: true },
         },
+        // @ts-ignore
+        pollVotes: {
+          where: { aliasId: input.aliasId },
+          select: { pollOptionId: true },
+        },
       },
     });
+    // @ts-ignore
     return post ? normalizePostPayload(post, input.aliasId) : null;
   }
 
@@ -350,10 +449,16 @@ async function applyVoteToPost(input: {
           where: { aliasId: input.aliasId },
           select: { aliasId: true },
         },
+        // @ts-ignore
+        pollVotes: {
+          where: { aliasId: input.aliasId },
+          select: { pollOptionId: true },
+        },
       },
     });
   });
 
+  // @ts-ignore
   return normalizePostPayload(post, input.aliasId);
 }
 
@@ -507,9 +612,15 @@ export async function reportPost(input: { postId: string; aliasId: string }) {
           where: { aliasId },
           select: { aliasId: true },
         },
+        // @ts-ignore
+        pollVotes: {
+          where: { aliasId },
+          select: { pollOptionId: true },
+        },
       },
     });
 
+    // @ts-ignore
     return post ? normalizePostPayload(post, aliasId) : null;
   }
 
@@ -570,10 +681,16 @@ export async function reportPost(input: { postId: string; aliasId: string }) {
           where: { aliasId },
           select: { aliasId: true },
         },
+        // @ts-ignore
+        pollVotes: {
+          where: { aliasId },
+          select: { pollOptionId: true },
+        },
       },
     });
 
     void report;
+    // @ts-ignore
     return freshPost ? normalizePostPayload(freshPost, aliasId) : null;
   });
 }
@@ -678,4 +795,67 @@ export async function reportComment(input: { commentId: string; aliasId: string 
 
     return freshComment ? normalizeCommentPayload(freshComment, aliasId) : null;
   });
+}
+
+export async function castWhisperVote(input: {
+  postId: string;
+  aliasId: string;
+  value: "TRUE" | "CAP" | "IDK";
+}) {
+  const alias = await prisma.alias.findUnique({
+    where: { id: input.aliasId },
+    select: { isBlocked: true },
+  });
+
+  if (!alias) throw new Error("Anonymous identity is missing");
+  assertAliasCanParticipate(alias);
+
+  const postId = input.postId.trim();
+  const aliasId = input.aliasId.trim();
+
+  const post = await prisma.$transaction(async (tx) => {
+    const existing = await tx.whisperVote.findUnique({
+      where: { postId_aliasId: { postId, aliasId } }
+    });
+
+    if (existing) {
+      if (existing.value === input.value) {
+        // Remove vote if clicking same one
+        await tx.whisperVote.delete({ where: { id: existing.id } });
+      } else {
+        // Change vote
+        await tx.whisperVote.update({
+          where: { id: existing.id },
+          data: { value: input.value }
+        });
+      }
+    } else {
+      await tx.whisperVote.create({
+        data: { postId, aliasId, value: input.value }
+      });
+    }
+
+    return tx.post.findUnique({
+      where: { id: postId },
+      include: {
+        ...POST_INCLUDE,
+        votes: {
+          where: { aliasId },
+          select: { aliasId: true, value: true },
+        },
+        reports: {
+          where: { aliasId },
+          select: { aliasId: true },
+        },
+        // @ts-ignore
+        pollVotes: {
+          where: { aliasId },
+          select: { pollOptionId: true },
+        },
+      },
+    });
+  });
+
+  // @ts-ignore
+  return post ? normalizePostPayload(post, aliasId) : null;
 }

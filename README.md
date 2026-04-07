@@ -11,6 +11,9 @@ The repository currently contains two connected but distinct product areas:
 
 The prep workflow is the primary product surface. The community workflow is designed as a supporting intelligence layer for student behavior around classes, professors, exams, and revision pressure.
 
+3. `The Whisper Network`
+   A clandestine, neon-drenched extension of the community for university secrets, confessions, and internal chitchat. It features a specialized "Truth Meter" voting system and premium animated entry.
+
 ## Product Overview
 
 ### Exam Prep
@@ -45,6 +48,16 @@ It supports structured post types rather than generic text-only threads:
 - `Library Live`
 - `Survival Thread`
 - `Intel Drop`
+
+#### The Whisper Network (Premium Extension)
+
+A dedicated section for high-stakes campus chatter with a distinct "Deep Space" aesthetic:
+
+- **Cinematic Entry**: Animated splash screen with secretive messaging.
+- **Truth Meter**: Specialized voting (Real, Cap, idk) replacing standard upvotes.
+- **Consensus Badges**: Posts hitting high "Real" scores get a `VERIFIED` shield; high "Cap" scores get a `CAP DETECTED` mask.
+- **Gossip Royalty**: Gamified tracking for the "Gossip King/Queen" among the inner circle.
+
 
 The system keeps identity anonymous at the UI level and pseudonymous at the system level through a server-owned cookie and hashed identifier model.
 
@@ -145,6 +158,11 @@ flowchart TD
     COMM --> CAPI[Community API Routes]
     CAPI --> SQLITE[(SQLite)]
     SQLITE --> FEED[Feed + Threads + Votes + Reports]
+
+    COMM --> WN[The Whisper Network]
+    WN --> SPLASH[Cinematic Splash Screen]
+    WN --> TM[Truth Meter Console]
+    TM --> CB[Consensus Badges: Verified / Cap Detected]
 ```
 
 ## Exam Prep Workflow
@@ -313,6 +331,11 @@ flowchart TD
     AJ --> AL[Increment report count]
     AK --> AM[Auto-hide / auto-block evaluation]
     AL --> AM
+
+    N --> WG[Gossip Interaction]
+    WG --> TMV[POST /api/community/posts/:id/whisper-vote]
+    TMV --> CSB[Consensus Evaluation: Real vs Cap]
+    CSB --> BGE[Dynamic Badging: Verified / Debunked]
 ```
 
 ### Community Post Types
@@ -477,21 +500,3 @@ If a student clears cookies:
 - a new identity is created
 - a new alias is assigned
 
-## Current Limitations
-
-- `metadataBase` is not yet set in [app/layout.tsx](/Users/yashsrivastava32/Desktop/ExamOracle/app/layout.tsx), so Next.js emits a non-blocking warning during build.
-- Community rate limiting is currently in-memory, which is fine for local-first iteration but not enough for distributed production deployment.
-- Moderation is automated and threshold-based; there is no manual admin dashboard yet.
-- Gemini access may be quota-limited depending on the configured project. The fallback path covers this operationally.
-- Prisma migration history has legacy local-development baggage; the schema and runtime are working, but migration cleanup may still be worth doing before formal release.
-
-## Recommended Next Steps
-
-If you want to harden this further after the current state:
-
-1. set `COMMUNITY_IDENTITY_SECRET` in every non-local environment
-2. set `metadataBase` in the root layout
-3. add browser E2E coverage
-4. add manual moderation/admin tooling
-5. move rate limiting from in-memory state to shared storage if deployed
-6. clean and squash Prisma migration history for a cleaner long-term baseline

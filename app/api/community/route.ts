@@ -6,10 +6,14 @@ import { assertTrustedMutationOrigin, enforceRateLimit } from "@/lib/communitySe
 export async function GET(request: Request) {
   try {
     const { alias } = await getOrCreateAnonymousIdentity();
-    const sort = new URL(request.url).searchParams.get("sort");
+    const { searchParams } = new URL(request.url);
+    const sort = searchParams.get("sort");
+    const tab = searchParams.get("tab");
+    
     const posts = await fetchCommunityPosts({
       aliasId: alias.id,
       sort: sort === "top" || sort === "active" ? sort : "latest",
+      tab: tab === "oracle" || tab === "whisper" ? tab : undefined,
     });
     return NextResponse.json(posts);
   } catch (error) {
@@ -33,6 +37,7 @@ export async function POST(req: Request) {
       quietLevel,
       hotTakeScore,
       expiresInHours,
+      pollOptions,
     } = await req.json();
     const { alias } = await getOrCreateAnonymousIdentity();
     enforceRateLimit({
@@ -50,6 +55,7 @@ export async function POST(req: Request) {
       quietLevel,
       hotTakeScore,
       expiresInHours,
+      pollOptions,
       aliasId: alias.id,
     });
     return NextResponse.json(post, { status: 201 });

@@ -2,8 +2,9 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
   engineType = "library"
+  output     = "../lib/generated/prisma"
 }
 
 datasource db {
@@ -24,6 +25,8 @@ model Alias {
   commentVotes CommentVote[]
   postReports  PostReport[]
   commentReports CommentReport[]
+  pollVotes    PollVote[]
+  whisperVotes WhisperVote[]
 }
 
 model Post {
@@ -49,6 +52,9 @@ model Post {
   comments    Comment[]
   votes       PostVote[]
   reports     PostReport[]
+  pollOptions PollOption[]
+  pollVotes   PollVote[]
+  whisperVotes WhisperVote[]
 }
 
 model Comment {
@@ -122,4 +128,41 @@ model CommentReport {
   alias     Alias    @relation(fields: [aliasId], references: [id], onDelete: Cascade)
 
   @@unique([commentId, aliasId])
+}
+
+model PollOption {
+  id        String     @id @default(cuid())
+  text      String
+  postId    String
+  post      Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  votes     PollVote[]
+}
+
+model PollVote {
+  id           String     @id @default(cuid())
+  
+  postId       String
+  post         Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  pollOptionId String
+  pollOption   PollOption @relation(fields: [pollOptionId], references: [id], onDelete: Cascade)
+  
+  aliasId      String
+  alias        Alias      @relation(fields: [aliasId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, aliasId])
+}
+
+model WhisperVote {
+  id        String   @id @default(cuid())
+  value     String   // "TRUE", "CAP", "IDK"
+  createdAt DateTime @default(now())
+
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  aliasId   String
+  alias     Alias    @relation(fields: [aliasId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, aliasId])
 }
