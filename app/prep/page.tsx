@@ -560,7 +560,6 @@ export default function PrepPage() {
                                                 summary={result.summary}
                                                 keyTakeaways={result.keyTakeaways}
                                                 mistakeTraps={result.mistakeTraps}
-                                                mustMemorizeFacts={result.mustMemorizeFacts}
                                                 summaryBlocks={result.summaryBlocks}
                                                 rapidRevision={result.rapidRevision}
                                                 difficultyRating={result.difficultyRating}
