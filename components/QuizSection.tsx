@@ -3,7 +3,7 @@
 import { MCQQuestion } from "@/types";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, Circle, HelpCircle, XCircle, Trophy, RefreshCw, ArrowRight } from "lucide-react";
+import { CheckCircle2, Circle, HelpCircle, XCircle, Trophy, RefreshCw, ArrowRight, ChevronRight, Star } from "lucide-react";
 
 interface QuizSectionProps {
     questions: MCQQuestion[];
@@ -17,9 +17,11 @@ export default function QuizSection({ questions }: QuizSectionProps) {
 
     if (!questions || questions.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-20 bg-white/[0.02] border border-white/[0.05] rounded-3xl">
-                <HelpCircle className="w-10 h-10 text-white/20 mb-4" />
-                <p className="text-white/40 font-light">No quiz generated.</p>
+            <div className="flex flex-col items-center justify-center py-24 bg-white/[0.02] border border-white/[0.05] rounded-[2.5rem] backdrop-blur-sm">
+                <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-6">
+                    <HelpCircle className="w-8 h-8 text-white/20" />
+                </div>
+                <p className="text-white/40 font-light tracking-wide uppercase text-[10px] font-black">No Questions Found</p>
             </div>
         );
     }
@@ -70,82 +72,109 @@ export default function QuizSection({ questions }: QuizSectionProps) {
     if (isSubmitted && !isReviewMode) {
         const score = calculateScore();
         const percentage = Math.round((score / questions.length) * 100);
+        
+        let rank = "Scholar";
+        let rankDesc = "Your comprehension of the core logic is nearly perfect.";
+        let rankColor = "text-emerald-400";
+        
+        if (percentage < 50) {
+            rank = "Acolyte";
+            rankDesc = "Further iterations required. Re-read the source notes.";
+            rankColor = "text-rose-400";
+        } else if (percentage < 85) {
+            rank = "Initiate";
+            rankDesc = "Solid foundation, but critical vectors were missed.";
+            rankColor = "text-amber-400";
+        }
 
         return (
             <motion.div
-                initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-                className="flex flex-col items-center justify-center text-center p-12 bg-white/[0.02] border border-white/[0.08] rounded-3xl"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex flex-col items-center justify-center text-center p-12 bg-white/[0.01] border border-white/[0.05] rounded-[3rem] shadow-2xl relative overflow-hidden"
             >
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 flex items-center justify-center mb-6 shadow-[0_0_60px_rgba(99,102,241,0.15)]">
-                    <Trophy className="w-10 h-10 text-indigo-400" />
-                </div>
-                <h2 className="text-4xl font-bold tracking-tight mb-2">Quiz Complete!</h2>
-                <p className="text-white/50 text-lg mb-8">You answered {score} out of {questions.length} questions correctly.</p>
+                {/* Background Glow */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500/10 blur-[120px] pointer-events-none" />
 
-                <div className="text-[6rem] font-bold tracking-tighter leading-none mb-10 text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30">
-                    {percentage}%
-                </div>
+                <div className="relative z-10">
+                    <div className="w-24 h-24 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-8 shadow-2xl hover:scale-105 transition-transform duration-500">
+                        <Trophy className="w-12 h-12 text-white" />
+                    </div>
+                    
+                    <div className="flex flex-col items-center gap-2 mb-10">
+                        <h2 className="text-4xl font-black tracking-tight text-white uppercase italic-none">Quiz Finished</h2>
+                        <div className={`text-[10px] font-black uppercase tracking-[0.4em] ${rankColor}`}>Grade: {rank}</div>
+                    </div>
 
-                <div className="flex gap-4">
-                    <button
-                        onClick={() => setIsReviewMode(true)}
-                        className="px-6 py-3 rounded-xl border border-white/[0.1] bg-white/[0.05] text-white hover:bg-white/[0.1] font-semibold transition-colors"
-                    >
-                        Review Answers
-                    </button>
-                    <button
-                        onClick={handleRetry}
-                        className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-black hover:bg-white/90 font-semibold transition-colors"
-                    >
-                        <RefreshCw className="w-4 h-4" /> Try Again
-                    </button>
+                    <div className="text-[8rem] font-black tracking-tighter leading-none mb-4 text-transparent bg-clip-text bg-gradient-to-b from-white to-white/20 select-none">
+                        {percentage}%
+                    </div>
+                    
+                    <p className="text-white/40 text-base mb-12 max-w-sm mx-auto font-light leading-relaxed italic-none">
+                        Correct Predictions: <span className="text-white font-bold">{score}/{questions.length}</span>. {rankDesc}
+                    </p>
+
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <button
+                            onClick={() => setIsReviewMode(true)}
+                            className="px-8 py-4 rounded-2xl border border-white/10 bg-white/5 text-white/60 hover:text-white hover:bg-white/10 text-[11px] font-black uppercase tracking-[0.2em] transition-all"
+                        >
+                            Review Matrix
+                        </button>
+                        <button
+                            onClick={handleRetry}
+                            className="flex items-center justify-center gap-3 px-10 py-4 rounded-2xl bg-white text-black text-[11px] font-black uppercase tracking-[0.2em] hover:bg-cyan-50 transition-all shadow-[0_0_40px_rgba(255,255,255,0.15)]"
+                        >
+                            <RefreshCw className="w-4 h-4" /> Reset Simulation
+                        </button>
+                    </div>
                 </div>
             </motion.div>
         );
     }
 
-    // Question / Review Mode
     return (
         <div className="relative">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-10 gap-6">
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-                        <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                        {isReviewMode ? "Quiz Review" : "Interactive Quiz"}
+                    <h2 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+                        <CheckCircle2 className="w-6 h-6 text-emerald-400" />
+                        {isReviewMode ? "Review Answers" : "Practice Quiz"}
                     </h2>
-                    <p className="text-sm text-white/40 mt-1 font-light">
-                        {isReviewMode ? "Reviewing correct answers and explanations." : "Test your understanding with generated MCQs."}
+                    <p className="text-sm text-white/30 mt-2 font-light">
+                        {isReviewMode ? "See why you got some questions wrong." : "Test your knowledge on the core concepts."}
                     </p>
                 </div>
                 {!isReviewMode && (
-                    <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-right">
-                        <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/30">
-                            Completion
+                    <div className="rounded-3xl border border-white/[0.05] bg-white/[0.02] px-6 py-4 backdrop-blur-xl">
+                        <div className="text-[9px] font-black uppercase tracking-[0.3em] text-white/20 mb-1">
+                            Load State
                         </div>
-                        <div className="mt-1 text-sm font-semibold text-white">
-                            {answeredCount} / {questions.length} answered
+                        <div className="text-xl font-black text-white/90 tabular-nums">
+                            {answeredCount} / {questions.length}
                         </div>
                     </div>
                 )}
             </div>
 
-            <div className="mb-6">
-                <div className="w-full bg-white/[0.05] h-1.5 rounded-full overflow-hidden">
+            <div className="mb-10">
+                <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
                     <motion.div
-                        className="bg-gradient-to-r from-indigo-500 to-purple-500 h-full"
+                        className="h-full bg-gradient-to-r from-emerald-600 via-emerald-400 to-emerald-500 shadow-[0_0_10px_rgba(52,211,153,0.3)]"
                         initial={{ width: 0 }}
                         animate={{ width: `${((currentQuestionIdx + 1) / questions.length) * 100}%` }}
-                        transition={{ duration: 0.3 }}
-                    ></motion.div>
+                        transition={{ type: "spring", bounce: 0, duration: 1 }}
+                    />
                 </div>
-                <div className="flex justify-between items-center mt-2">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-white/30">
-                        Question {currentQuestionIdx + 1} of {questions.length}
+                <div className="flex justify-between items-center mt-3">
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20">
+                        Question {currentQuestionIdx + 1}
                     </span>
                     {isReviewMode && (
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-400 border border-indigo-500/20 bg-indigo-500/10 px-2 rounded">
-                            REVIEW MODE
-                        </span>
+                        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400">
+                             <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
+                             Review Analysis Active
+                        </div>
                     )}
                 </div>
             </div>
@@ -153,37 +182,41 @@ export default function QuizSection({ questions }: QuizSectionProps) {
             <AnimatePresence mode="wait">
                 <motion.div
                     key={currentQuestionIdx}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.2 }}
-                    className="bg-white/[0.02] border border-white/[0.08] p-8 rounded-3xl"
+                    initial={{ opacity: 0, x: 20, scale: 0.99 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    exit={{ opacity: 0, x: -20, scale: 1.01 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    className="bg-white/[0.01] border border-white/[0.05] p-10 sm:p-14 rounded-[3rem] relative overflow-hidden group shadow-2xl backdrop-blur-md"
                 >
-                    <h3 className="text-xl sm:text-2xl font-semibold mb-8 text-white leading-relaxed">
+                    <div className="absolute top-0 right-0 p-10 opacity-[0.02] pointer-events-none">
+                        <HelpCircle className="w-48 h-48" />
+                    </div>
+
+                    <h3 className="text-2xl sm:text-3xl font-bold mb-12 text-white leading-relaxed tracking-tight relative z-10 selection:bg-emerald-500/30">
                         {currentQuestion.question}
                     </h3>
 
-                    <div className="space-y-3">
+                    <div className="grid gap-3 relative z-10">
                         {currentQuestion.options.map((option, idx) => {
                             const isSelected = selectedAnswers[currentQuestionIdx] === option;
                             const isCorrectAnswer = isReviewMode && option === currentQuestion.answer;
 
-                            let optionClass = "border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.05]";
-                            let icon = <Circle className="w-5 h-5 text-white/20" />;
+                            let optionClass = "border-white/5 bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/10";
+                            let icon = <div className="w-5 h-5 rounded-full border-2 border-white/10 transition-colors group-hover/opt:border-white/20" />;
 
                             if (isReviewMode) {
                                 if (isCorrectAnswer) {
-                                    optionClass = "border-emerald-500/30 bg-emerald-500/10";
-                                    icon = <CheckCircle2 className="w-5 h-5 text-emerald-400" />;
+                                    optionClass = "border-emerald-500/30 bg-emerald-500/10 shadow-[0_0_20px_rgba(16,185,129,0.05)]";
+                                    icon = <CheckCircle2 className="w-6 h-6 text-emerald-400" />;
                                 } else if (isSelected) {
                                     optionClass = "border-rose-500/30 bg-rose-500/10 opacity-50";
-                                    icon = <XCircle className="w-5 h-5 text-rose-400" />;
+                                    icon = <XCircle className="w-6 h-6 text-rose-400" />;
                                 } else {
-                                    optionClass = "border-white/[0.05] bg-transparent opacity-30";
+                                    optionClass = "border-white/5 bg-transparent opacity-20 scale-95";
                                 }
                             } else if (isSelected) {
-                                optionClass = "border-white bg-white/10";
-                                icon = <CheckCircle2 className="w-5 h-5 text-white" />;
+                                optionClass = "border-white/30 bg-white/10 shadow-[0_0_25px_rgba(255,255,255,0.05)] scale-[1.02]";
+                                icon = <CheckCircle2 className="w-6 h-6 text-white" />;
                             }
 
                             return (
@@ -191,10 +224,10 @@ export default function QuizSection({ questions }: QuizSectionProps) {
                                     key={idx}
                                     onClick={() => handleSelectOption(option)}
                                     disabled={isReviewMode}
-                                    className={`w-full flex items-center gap-4 text-left p-4 rounded-xl border transition-all duration-200 ${optionClass}`}
+                                    className={`group/opt w-full flex items-center gap-5 text-left p-6 rounded-[1.5rem] border transition-all duration-300 ${optionClass}`}
                                 >
-                                    <div className="shrink-0">{icon}</div>
-                                    <span className={`text-base font-medium ${isSelected || isCorrectAnswer ? 'text-white' : 'text-white/70'}`}>
+                                    <div className="shrink-0 flex items-center justify-center w-6 h-6">{icon}</div>
+                                    <span className={`text-lg font-medium transition-colors ${isSelected || isCorrectAnswer ? 'text-white' : 'text-white/60 group-hover/opt:text-white/90'}`}>
                                         {option}
                                     </span>
                                 </button>
@@ -202,26 +235,31 @@ export default function QuizSection({ questions }: QuizSectionProps) {
                         })}
                     </div>
 
-                    {isReviewMode && selectedAnswers[currentQuestionIdx] !== currentQuestion.answer && (
-                        <div className="mt-6 p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-200 text-sm leading-relaxed">
-                            <strong>Explanation: </strong>
-                            {currentQuestion.explanation}
-                        </div>
-                    )}
-                    {isReviewMode && selectedAnswers[currentQuestionIdx] === currentQuestion.answer && (
-                        <div className="mt-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-200 text-sm leading-relaxed">
-                            <strong className="text-emerald-400">Correct! </strong>
-                            {currentQuestion.explanation}
-                        </div>
-                    )}
+                    <AnimatePresence>
+                        {isReviewMode && (
+                            <motion.div 
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                className="mt-10 overflow-hidden"
+                            >
+                                <div className={`p-6 rounded-2xl border ${selectedAnswers[currentQuestionIdx] === currentQuestion.answer ? 'bg-emerald-500/5 border-emerald-500/10 text-emerald-200/60' : 'bg-indigo-500/5 border-indigo-500/10 text-indigo-200/60'} text-base leading-relaxed font-light shadow-inner`}>
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <div className={`h-1.5 w-1.5 rounded-full ${selectedAnswers[currentQuestionIdx] === currentQuestion.answer ? 'bg-emerald-400' : 'bg-indigo-400'}`} />
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60">Explanation</span>
+                                    </div>
+                                    {currentQuestion.explanation}
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </motion.div>
             </AnimatePresence>
 
-            <div className="flex justify-between items-center mt-8">
+            <div className="flex items-center justify-between mt-10">
                 <button
                     onClick={handlePrev}
                     disabled={isFirstQuestion}
-                    className="px-6 py-3 rounded-xl border border-white/[0.08] bg-white/[0.02] text-sm font-semibold disabled:opacity-30 transition-colors"
+                    className="flex items-center gap-2 px-8 py-4 rounded-2xl border border-white/5 bg-white/[0.02] text-[10px] font-black uppercase tracking-[0.25em] text-white/30 disabled:opacity-0 transition-all hover:bg-white/5 hover:text-white/60"
                 >
                     Previous
                 </button>
@@ -231,32 +269,33 @@ export default function QuizSection({ questions }: QuizSectionProps) {
                         <button
                             onClick={handleSubmit}
                             disabled={Object.keys(selectedAnswers).length !== questions.length}
-                            className="px-8 py-3 rounded-xl bg-white text-black font-bold text-sm hover:bg-white/90 disabled:opacity-30 disabled:hover:bg-white transition-all shadow-lg"
+                            className="px-12 py-4 rounded-2xl bg-white text-black text-[11px] font-black uppercase tracking-[0.25em] hover:bg-cyan-50 disabled:opacity-20 disabled:hover:bg-white transition-all shadow-[0_0_40px_rgba(255,255,255,0.15)] active:scale-[0.98]"
                         >
                             Submit Quiz
                         </button>
                     ) : (
                         <button
                             onClick={handleNext}
-                            className="flex items-center gap-2 px-8 py-3 rounded-xl bg-white/10 border border-white/20 text-white font-semibold text-sm hover:bg-white/20 transition-colors"
+                            disabled={!selectedAnswers[currentQuestionIdx]}
+                            className="flex items-center gap-3 px-10 py-4 rounded-2xl bg-white/5 border border-white/10 text-white/80 text-[10px] font-black uppercase tracking-[0.25em] hover:bg-white/10 disabled:opacity-20 transition-all"
                         >
-                            Next <ArrowRight className="w-4 h-4" />
+                            Next <ChevronRight className="w-4 h-4" />
                         </button>
                     )
                 ) : (
                     isLastQuestion ? (
                         <button
                             onClick={handleRetry}
-                            className="px-6 py-3 rounded-xl bg-white/10 text-white border border-white/20 hover:bg-white/20 font-semibold transition-colors"
+                            className="px-10 py-4 rounded-2xl bg-white/5 text-white/50 border border-white/10 hover:bg-white/10 hover:text-white text-[10px] font-black uppercase tracking-[0.25em] transition-all"
                         >
-                            Exit Review
+                            Terminate Review
                         </button>
                     ) : (
                         <button
                             onClick={handleNext}
-                            className="px-6 py-3 rounded-xl bg-white text-black font-semibold hover:bg-white/90 transition-colors"
+                            className="flex items-center gap-3 px-10 py-4 rounded-2xl bg-white text-black text-[10px] font-black uppercase tracking-[0.25em] hover:bg-cyan-50 transition-all"
                         >
-                            Next Question
+                            Next Mistake <ChevronRight className="w-4 h-4" />
                         </button>
                     )
                 )}

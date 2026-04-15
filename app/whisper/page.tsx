@@ -1,24 +1,22 @@
 "use client";
 
+import { PostCardSkeleton } from "@/components/ui/SkeletonLoader";
+import { useToaster } from "@/components/ui/Toaster";
 import { startTransition, useEffect, useState } from "react";
 import CreatePostForm from "@/components/community/CreatePostForm";
 import PostCard, { Post } from "@/components/community/PostCard";
 import CommentThread, { CommunityComment } from "@/components/community/CommentThread";
 import WhisperSplashScreen from "@/components/community/WhisperSplashScreen";
 import {
-  Activity,
   ArrowLeft,
-  Loader2,
   Plus,
   RefreshCw,
-  Sparkles,
-  TriangleAlert,
   X,
   VenetianMask,
   Crown,
   Ghost,
-  MessageSquareText,
   Flame,
+  TriangleAlert,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -39,6 +37,7 @@ export default function WhisperPage() {
   const [sortMode, setSortMode] = useState<CommunitySort>("latest");
   const [feedError, setFeedError] = useState<string | null>(null);
   const [threadError, setThreadError] = useState<string | null>(null);
+  const { toast } = useToaster();
 
   const fetchPosts = async (sort: CommunitySort, silent = false) => {
     if (silent) {
@@ -135,6 +134,37 @@ export default function WhisperPage() {
   }, [selectedPost]);
 
   const handleVote = async (id: string, action: "upvote" | "downvote") => {
+    // Optimistic Update
+    const originalPosts = [...posts];
+    const originalSelectedPost = selectedPost;
+
+    setPosts((current) =>
+      current.map((post) => {
+        if (post.id !== id) return post;
+
+        const newVote = action === "upvote" ? 1 : -1;
+        const currentVote = post.viewerVote;
+
+        let upvotes = post.upvotes;
+        let downvotes = post.downvotes;
+
+        if (currentVote === 1) upvotes--;
+        if (currentVote === -1) downvotes--;
+
+        if (currentVote !== newVote) {
+          if (newVote === 1) upvotes++;
+          if (newVote === -1) downvotes++;
+        }
+
+        return {
+          ...post,
+          upvotes,
+          downvotes,
+          viewerVote: currentVote === newVote ? 0 : newVote,
+        };
+      })
+    );
+
     try {
       const res = await fetch(`/api/community/posts/${id}/upvote`, {
         method: "POST",
@@ -150,13 +180,17 @@ export default function WhisperPage() {
 
       setPosts((current) => current.map((post) => (post.id === id ? data : post)));
       setSelectedPost((current) => (current?.id === id ? data : current));
+      toast(`Whisper vote cast!`, "success");
     } catch (error) {
+      setPosts(originalPosts);
+      setSelectedPost(originalSelectedPost);
       setFeedError(error instanceof Error ? error.message : "Vote failed");
+      toast(error instanceof Error ? error.message : "Vote failed", "error");
     }
   };
 
-  const handlePollVote = async (postId: string, pollOptionId: string) => {
-     // No polls in gossip section for now, but keeping for consistency if needed
+  const handlePollVote = () => {
+     // No polls in gossip section for now
   };
 
   const handleWhisperVote = async (postId: string, value: "TRUE" | "CAP" | "IDK") => {
@@ -321,6 +355,30 @@ export default function WhisperPage() {
       </div>
 
       <div className="relative z-10 mx-auto max-w-[1920px] px-4 pt-24 sm:px-6 lg:px-8">
+        {(feedError || threadError || isBlocked) && (
+          <div className="mb-8 grid gap-3 max-w-4xl mx-auto">
+            {feedError && (
+              <div className="flex items-start gap-3 rounded-[1.4rem] border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+                <TriangleAlert className="mt-0.5 h-4.5 w-4.5 shrink-0" />
+                <span>{feedError}</span>
+              </div>
+            )}
+            {threadError && (
+              <div className="flex items-start gap-3 rounded-[1.4rem] border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+                <TriangleAlert className="mt-0.5 h-4.5 w-4.5 shrink-0" />
+                <span>{threadError}</span>
+              </div>
+            )}
+            {isBlocked && (
+              <div className="flex items-start gap-3 rounded-[1.4rem] border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+                <TriangleAlert className="mt-0.5 h-4.5 w-4.5 shrink-0" />
+                <span>
+                  Access to the Whisper Network is restricted for this alias.
+                </span>
+              </div>
+            )}
+          </div>
+        )}
         <div className="grid grid-cols-1 xl:grid-cols-[300px_1fr_300px] gap-8 items-start">
           
           {/* Sidebar Left: Gossip King/Queen */}
@@ -400,8 +458,10 @@ export default function WhisperPage() {
 
             <div className="w-full space-y-6">
               {loading ? (
-                <div className="flex justify-center py-20 text-fuchsia-400/50">
-                  <Loader2 className="h-8 w-8 animate-spin" />
+                <div className="flex flex-col gap-6">
+                  <PostCardSkeleton />
+                  <PostCardSkeleton />
+                  <PostCardSkeleton />
                 </div>
               ) : posts.length === 0 ? (
                 <div className="rounded-[40px] border border-dashed border-white/10 bg-white/[0.01] py-24 text-center text-sm text-white/20">

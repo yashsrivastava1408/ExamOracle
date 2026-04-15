@@ -30,16 +30,16 @@ export default function FeatureOverview({
 
     return (
         <section className="flex flex-col gap-4">
-            <div className="max-w-2xl">
-                <h2 className="text-lg font-semibold tracking-tight text-white sm:text-xl">
+            <div className="px-2">
+                <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-white/70">
                     {heading}
                 </h2>
-                <p className="mt-1 text-sm leading-relaxed text-white/45">
+                <p className="mt-1 text-[11px] leading-relaxed text-white/30 font-medium">
                     {subheading}
                 </p>
             </div>
 
-            <div className="overflow-hidden rounded-[1.5rem] border border-white/[0.08] bg-black/20">
+            <div className="overflow-hidden rounded-[24px] border border-white/5 bg-white/[0.015] shadow-lg backdrop-blur-md">
                 {items.map((item, index) => {
                     const Icon = item.icon;
                     const isOpen = openKey === item.key;
@@ -59,24 +59,21 @@ export default function FeatureOverview({
                                         current === item.key ? "" : item.key
                                     )
                                 }
-                                className={`group flex w-full items-center gap-3 px-4 py-4 text-left transition-colors hover:bg-white/[0.04] ${isOpen ? "bg-white/[0.04]" : ""}`}
+                                className={`group flex w-full items-center gap-3 px-3 py-3.5 text-left transition-colors hover:bg-white/[0.03] ${isOpen ? "bg-white/[0.02]" : ""}`}
                             >
                                 <div
-                                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] ${item.accentClass}`}
+                                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[12px] border border-white/10 bg-black/40 shadow-inner group-hover:scale-105 transition-transform ${item.accentClass}`}
                                 >
                                     <Icon className="h-4 w-4 text-white" />
                                 </div>
 
                                 <div className="min-w-0 flex-1">
                                     <div className="flex items-center justify-between gap-3">
-                                        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">
+                                        <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20">
                                             {item.eyebrow}
                                         </div>
-                                        <div className="shrink-0 text-xs font-semibold text-white/55">
-                                            {item.value}
-                                        </div>
                                     </div>
-                                    <div className="mt-1 text-sm font-semibold text-white sm:text-[15px]">
+                                    <div className="mt-0.5 text-sm font-semibold text-white/90">
                                         {item.title}
                                     </div>
                                 </div>
@@ -95,17 +92,17 @@ export default function FeatureOverview({
                                         transition={{ duration: 0.2 }}
                                         className="overflow-hidden"
                                     >
-                                        <div className="px-4 pb-4 pl-[4.75rem]">
-                                            <p className="text-sm leading-relaxed text-white/50">
+                                        <div className="px-3 pb-4 pl-[3.75rem]">
+                                            <p className="text-xs leading-relaxed text-white/40">
                                                 {item.description}
                                             </p>
                                             {item.onClick && (
                                                 <button
                                                     type="button"
                                                     onClick={item.onClick}
-                                                    className="mt-3 inline-flex rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/65 transition-colors hover:bg-white/[0.08] hover:text-white"
+                                                    className="mt-3 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.15em] text-white/60 transition-colors hover:bg-white/10 hover:text-white"
                                                 >
-                                                    Use Feature
+                                                    Deploy Unit
                                                 </button>
                                             )}
                                         </div>

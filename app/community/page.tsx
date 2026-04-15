@@ -1,18 +1,17 @@
 "use client";
 
+import { useToaster } from "@/components/ui/Toaster";
 import { startTransition, useEffect, useState } from "react";
+import { PostCardSkeleton } from "@/components/ui/SkeletonLoader";
 import CreatePostForm from "@/components/community/CreatePostForm";
 import PostCard, { Post } from "@/components/community/PostCard";
 import CommentThread, { CommunityComment } from "@/components/community/CommentThread";
 import {
   Activity,
   ArrowLeft,
-  Loader2,
-  MessageSquareText,
   Plus,
   Radio,
   RefreshCw,
-  ShieldCheck,
   Sparkles,
   TriangleAlert,
   VenetianMask,
@@ -36,6 +35,7 @@ export default function CommunityPage() {
   const [sortMode, setSortMode] = useState<CommunitySort>("latest");
   const [feedError, setFeedError] = useState<string | null>(null);
   const [threadError, setThreadError] = useState<string | null>(null);
+  const { toast } = useToaster();
 
   const fetchPosts = async (sort: CommunitySort, silent = false) => {
     if (silent) {
@@ -132,6 +132,39 @@ export default function CommunityPage() {
   }, [selectedPost]);
 
   const handleVote = async (id: string, action: "upvote" | "downvote") => {
+    // Optimistic Update
+    const originalPosts = [...posts];
+    const originalSelectedPost = selectedPost;
+
+    setPosts((current) =>
+      current.map((post) => {
+        if (post.id !== id) return post;
+
+        const newVote = action === "upvote" ? 1 : -1;
+        const currentVote = post.viewerVote;
+
+        let upvotes = post.upvotes;
+        let downvotes = post.downvotes;
+
+        // Revert previous vote
+        if (currentVote === 1) upvotes--;
+        if (currentVote === -1) downvotes--;
+
+        // Apply new vote (unless clicking same button twice to unvote)
+        if (currentVote !== newVote) {
+          if (newVote === 1) upvotes++;
+          if (newVote === -1) downvotes++;
+        }
+
+        return {
+          ...post,
+          upvotes,
+          downvotes,
+          viewerVote: currentVote === newVote ? 0 : newVote,
+        };
+      })
+    );
+
     try {
       const res = await fetch(`/api/community/posts/${id}/upvote`, {
         method: "POST",
@@ -147,8 +180,12 @@ export default function CommunityPage() {
 
       setPosts((current) => current.map((post) => (post.id === id ? data : post)));
       setSelectedPost((current) => (current?.id === id ? data : current));
+      toast(`Vote registered for "${data.title.substring(0, 20)}..."`, "success");
     } catch (error) {
+      setPosts(originalPosts);
+      setSelectedPost(originalSelectedPost);
       setFeedError(error instanceof Error ? error.message : "Vote failed");
+      toast(error instanceof Error ? error.message : "Vote failed", "error");
     }
   };
 
@@ -522,8 +559,10 @@ export default function CommunityPage() {
 
               <div className="flex flex-col gap-6">
                 {loading ? (
-                  <div className="flex justify-center py-20 text-indigo-300/50">
-                    <Loader2 className="h-6 w-6 animate-spin" />
+                  <div className="flex flex-col gap-6 w-full">
+                    <PostCardSkeleton />
+                    <PostCardSkeleton />
+                    <PostCardSkeleton />
                   </div>
                 ) : posts.length === 0 ? (
                   <div className="rounded-[24px] border border-dashed border-white/10 bg-white/[0.015] py-24 text-center text-sm text-white/40 backdrop-blur-sm">

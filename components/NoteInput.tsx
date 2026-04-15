@@ -138,6 +138,11 @@ export default function NoteInput({ onSubmit, isLoading }: NoteInputProps) {
         }
     };
 
+    const handleClear = () => {
+        setNotes("");
+        setLimitWarning(false);
+    };
+
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
@@ -201,9 +206,9 @@ export default function NoteInput({ onSubmit, isLoading }: NoteInputProps) {
             {/* Waitlist Modal */}
             {showWaitlist && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                    <div className="relative w-full max-w-md overflow-hidden rounded-[2rem] border border-amber-400/20 bg-[#08111f] shadow-2xl p-8">
+                    <div className="relative w-full max-w-md overflow-hidden rounded-[32px] border border-cyan-400/20 bg-[#03060c] shadow-[0_30px_80px_rgba(0,0,0,0.5)] p-8">
                         {/* Background glow */}
-                        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-amber-500/20 rounded-full blur-[80px] pointer-events-none"></div>
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-cyan-500/10 blur-[80px] pointer-events-none"></div>
 
                         <button
                             onClick={() => setShowWaitlist(false)}
@@ -213,12 +218,12 @@ export default function NoteInput({ onSubmit, isLoading }: NoteInputProps) {
                         </button>
 
                         <div className="relative z-10 flex flex-col items-center text-center">
-                            <div className="w-12 h-12 rounded-xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center mb-5">
-                                <Sparkles className="w-6 h-6 text-amber-400" />
+                            <div className="w-12 h-12 rounded-[16px] bg-cyan-400/10 border border-cyan-400/20 flex items-center justify-center mb-5">
+                                <Sparkles className="w-6 h-6 text-cyan-300" />
                             </div>
 
-                            <h3 className="text-2xl font-bold tracking-tight text-white mb-2">
-                                ExamOracle <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-amber-500">Pro</span>
+                            <h3 className="text-2xl font-semibold tracking-tight text-white mb-2">
+                                ExamOracle <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-cyan-500 font-bold">Pro</span>
                             </h3>
 
                             <p className="text-sm text-white/60 mb-6 leading-relaxed">
@@ -242,15 +247,15 @@ export default function NoteInput({ onSubmit, isLoading }: NoteInputProps) {
                                             placeholder="Enter your email..."
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
-                                            className="w-full bg-black/50 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-amber-400/50 focus:ring-1 focus:ring-amber-400/50 transition-all"
+                                            className="w-full bg-black/50 border border-white/10 rounded-[16px] py-3 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-cyan-400/50 focus:ring-1 focus:ring-cyan-400/50 transition-all font-medium"
                                         />
                                     </div>
                                     <button
                                         type="submit"
                                         disabled={isSubmitting}
-                                        className="bg-gradient-to-r from-amber-400 to-amber-500 text-black font-bold px-5 rounded-xl text-sm hover:opacity-90 transition-opacity disabled:opacity-50 whitespace-nowrap"
+                                        className="bg-white text-black font-semibold px-5 rounded-[16px] text-sm hover:bg-cyan-50 transition-colors disabled:opacity-50 whitespace-nowrap shadow-[0_0_20px_rgba(255,255,255,0.1)]"
                                     >
-                                        {isSubmitting ? "..." : "Claim 50% Off"}
+                                        {isSubmitting ? "..." : "Join Waitlist"}
                                     </button>
                                 </form>
                             )}
@@ -264,19 +269,19 @@ export default function NoteInput({ onSubmit, isLoading }: NoteInputProps) {
             )}
 
             <div
-                className={`p-6 sm:p-8 rounded-[2rem] border transition-all duration-300 ${isDragging ? "border-amber-400/50 bg-amber-400/[0.05]" : "border-white/[0.08] bg-white/[0.02]"} backdrop-blur-md shadow-2xl flex flex-col gap-6 relative overflow-hidden group`}
+                className={`p-6 sm:p-7 rounded-[32px] border transition-all duration-500 ${isDragging ? "border-cyan-400/50 bg-cyan-400/[0.05] shadow-[0_0_40px_rgba(34,211,238,0.15)]" : isValid && !isLoading ? "border-cyan-500/30 bg-white/[0.015] animate-[pulse_4s_infinite]" : "border-white/5 bg-white/[0.01] hover:bg-white/[0.02]"} backdrop-blur-2xl shadow-[0_30px_80px_rgba(0,0,0,0.4)] flex flex-col gap-5 relative overflow-hidden group`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
             >
-                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-white/[0.03] to-transparent rounded-full translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none"></div>
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-cyan-500/[0.02] to-transparent rounded-full translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none"></div>
 
                 {/* Drag & Drop Visual Overlay */}
                 {isDragging && (
-                    <div className="absolute inset-x-0 inset-y-0 z-50 flex items-center justify-center rounded-[2rem] bg-[#07111d]/90 backdrop-blur-sm border-2 border-dashed border-amber-400">
+                    <div className="absolute inset-x-0 inset-y-0 z-50 flex items-center justify-center rounded-[32px] bg-[#03060c]/90 backdrop-blur-sm border-2 border-dashed border-cyan-400">
                         <div className="flex flex-col items-center gap-4 animate-pulse">
-                            <div className="w-16 h-16 rounded-full bg-amber-400/20 flex items-center justify-center border border-amber-400/40">
-                                <UploadCloud className="w-8 h-8 text-amber-400" />
+                            <div className="w-16 h-16 rounded-full bg-cyan-400/20 flex items-center justify-center border border-cyan-400/40 shadow-[0_0_30px_rgba(34,211,238,0.3)]">
+                                <UploadCloud className="w-8 h-8 text-cyan-400" />
                             </div>
                             <p className="text-xl font-bold tracking-tight text-white">Drop document to extract</p>
                         </div>
@@ -284,12 +289,9 @@ export default function NoteInput({ onSubmit, isLoading }: NoteInputProps) {
                 )}
 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
-                    <div className="flex flex-col">
-                        <h2 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                            <CopyPlus className="w-5 h-5 text-white/50" />
-                            Input Workspace
-                        </h2>
-                        <p className="text-sm text-white/40 mt-1 font-light">Paste text or drop a <span className="text-white/80 font-medium">PDF file</span> here.</p>
+                    <div className="flex items-center gap-3">
+                        <div className={`h-2 w-2 rounded-full ${isValid ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" : charCount > 0 ? "bg-amber-400" : "bg-white/20"}`} />
+                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">Status</span>
                     </div>
                     <div className="flex items-center gap-2 self-start sm:self-auto">
                         <input
@@ -309,16 +311,26 @@ export default function NoteInput({ onSubmit, isLoading }: NoteInputProps) {
                             ) : (
                                 <FileText className="w-3.5 h-3.5" />
                             )}
-                            Upload PDF
+                            Upload Notes
                         </button>
                         <button
                             onClick={handleTrySample}
-                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-cyan-400/20 bg-cyan-400/10 hover:bg-cyan-400/20 text-xs font-semibold tracking-wide transition-all shadow-inner text-cyan-200 whitespace-nowrap"
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-semibold tracking-wide transition-all shadow-inner text-white/60 whitespace-nowrap"
                             disabled={isLoading || isExtracting}
                         >
                             <Sparkles className="w-3.5 h-3.5" />
-                            Demo
+                            Try Sample
                         </button>
+                        {charCount > 0 && (
+                             <button
+                                onClick={handleClear}
+                                className="inline-flex items-center justify-center w-9 h-9 rounded-xl border border-rose-500/10 bg-rose-500/5 hover:bg-rose-500/20 text-rose-400 transition-all shadow-inner"
+                                disabled={isLoading || isExtracting}
+                                title="Clear Workspace"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -344,7 +356,7 @@ export default function NoteInput({ onSubmit, isLoading }: NoteInputProps) {
                             setNotes(newNotes);
                             if (newNotes.length <= MAX_FREE_CHARS) setLimitWarning(false);
                         }}
-                        className={`min-h-[350px] resize-y rounded-2xl bg-black/40 border border-white/[0.08] p-6 text-base text-white/90 placeholder:text-white/20 focus-visible:ring-0 focus-visible:border-amber-400/40 focus-visible:shadow-[0_0_20px_rgba(251,191,36,0.15)] transition-all font-light leading-relaxed shadow-inner ${limitWarning ? 'pt-20' : ''}`}
+                        className={`min-h-[400px] resize-y rounded-[24px] bg-black/40 border border-white/[0.04] p-8 text-[15px] text-white/95 placeholder:text-white/10 focus-visible:ring-0 focus-visible:border-cyan-400/40 focus-visible:bg-cyan-500/[0.01] transition-all font-light leading-relaxed shadow-inner ${limitWarning ? 'pt-24' : ''}`}
                         disabled={isLoading || isExtracting}
                     />
 
@@ -365,20 +377,20 @@ export default function NoteInput({ onSubmit, isLoading }: NoteInputProps) {
                     id="generate-btn"
                     onClick={handleSubmit}
                     disabled={!isValid || isLoading || isExtracting || charCount > MAX_FREE_CHARS}
-                    className="relative z-10 w-full h-14 rounded-2xl bg-white text-black font-semibold text-[15px] flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-30 disabled:hover:scale-100 shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:shadow-[0_0_40px_rgba(255,255,255,0.2)] disabled:shadow-none overflow-hidden group"
+                    className={`relative z-10 w-full h-16 rounded-full ${isValid ? 'bg-white text-black' : 'bg-white/10 text-white/20'} font-bold text-[14px] uppercase tracking-[0.2em] flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] shadow-[0_0_30px_rgba(255,255,255,0.05)] hover:shadow-[0_0_40px_rgba(255,255,255,0.15)] disabled:shadow-none overflow-hidden group`}
                 >
                     {/* Sweep Shine Effect */}
-                    <div className="absolute inset-0 -translate-x-[150%] bg-gradient-to-r from-transparent via-black/10 to-transparent skew-x-12 transition-transform duration-1000 ease-in-out group-hover:translate-x-[150%] pointer-events-none" />
+                    <div className="absolute inset-0 -translate-x-[150%] bg-gradient-to-r from-transparent via-cyan-500/10 to-transparent skew-x-12 transition-transform duration-1000 ease-in-out group-hover:translate-x-[150%] pointer-events-none" />
 
                     {isLoading ? (
                         <>
-                            <div className="w-4 h-4 rounded-full border-[2px] border-black/20 border-t-black animate-spin" />
-                            INITIALIZING ENGINE...
+                            <div className="w-5 h-5 rounded-full border-[2px] border-black/10 border-t-black animate-spin" />
+                            <span>Processing...</span>
                         </>
                     ) : (
                         <>
-                            <Sparkles className="w-4 h-4" />
-                            GENERATE STUDY KIT
+                            <Sparkles className={`w-4 h-4 ${isValid ? 'text-cyan-500 animate-pulse' : ''}`} />
+                            <span>Create Study Kit</span>
                         </>
                     )}
                 </button>

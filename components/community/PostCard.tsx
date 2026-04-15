@@ -5,7 +5,6 @@ import {
   ArrowDownCircle,
   ArrowUpCircle,
   BookMarked,
-  ChevronRight,
   Flame,
   LibraryBig,
   MapPin,
@@ -19,7 +18,6 @@ import {
   BarChart2,
   Medal,
   VenetianMask,
-  Crown,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -154,6 +152,8 @@ export default function PostCard({ post, onVote, onPollVote, onReport, onWhisper
     <motion.div
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
+      role="article"
+      aria-label={`Post by ${post.alias.name}: ${post.title}`}
       className={`group relative cursor-pointer overflow-hidden rounded-[24px] border p-6 transition-all duration-300 backdrop-blur-md ${
         isActive
           ? isGossip 
@@ -260,6 +260,7 @@ export default function PostCard({ post, onVote, onPollVote, onReport, onWhisper
                 <button
                   key={opt.id}
                   onClick={() => onPollVote(post.id, opt.id)}
+                  aria-label={`Vote for: ${opt.text}`}
                   className="w-full text-left rounded-xl border border-white/5 bg-white/[0.02] p-3 text-sm font-medium text-white/70 transition-all hover:bg-white/[0.05] hover:text-white hover:border-white/10 active:scale-[0.98]"
                 >
                   {opt.text}
@@ -295,6 +296,8 @@ export default function PostCard({ post, onVote, onPollVote, onReport, onWhisper
           <div className="grid grid-cols-3 gap-2">
              <button 
                onClick={(e) => handleWhisperVote(e, "TRUE")}
+               aria-label="Mark as Real"
+               title="Real: Community believes this is true"
                className={`flex flex-col items-center gap-1.5 py-2.5 rounded-2xl border transition-all ${
                  post.viewerWhisperVote === "TRUE" 
                  ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-300" 
@@ -308,6 +311,8 @@ export default function PostCard({ post, onVote, onPollVote, onReport, onWhisper
              </button>
              <button 
                onClick={(e) => handleWhisperVote(e, "CAP")}
+               aria-label="Mark as Cap"
+               title="Cap: Community believes this is fake/gossip"
                className={`flex flex-col items-center gap-1.5 py-2.5 rounded-2xl border transition-all ${
                  post.viewerWhisperVote === "CAP" 
                  ? "bg-fuchsia-500/20 border-fuchsia-500/40 text-fuchsia-300" 
@@ -321,6 +326,8 @@ export default function PostCard({ post, onVote, onPollVote, onReport, onWhisper
              </button>
              <button 
                onClick={(e) => handleWhisperVote(e, "IDK")}
+               aria-label="Mark as I don't know"
+               title="idk: Community is unsure"
                className={`flex flex-col items-center gap-1.5 py-2.5 rounded-2xl border transition-all ${
                  post.viewerWhisperVote === "IDK" 
                  ? "bg-white/10 border-white/20 text-white/80" 
@@ -370,6 +377,7 @@ export default function PostCard({ post, onVote, onPollVote, onReport, onWhisper
           <div className="flex items-center gap-3 rounded-full border border-white/[0.04] bg-white/[0.02] px-3 py-1.5">
             <button
               onClick={handleUpvote}
+              aria-label="Upvote"
               className={`transition-all active:scale-90 ${post.viewerVote === 1 ? "text-indigo-400 drop-shadow-[0_0_8px_rgba(129,140,248,0.5)]" : "text-white/40 hover:text-white/80"}`}
             >
               <ArrowUpCircle className="w-[18px] h-[18px]" />
@@ -379,6 +387,7 @@ export default function PostCard({ post, onVote, onPollVote, onReport, onWhisper
             </span>
             <button
               onClick={handleDownvote}
+              aria-label="Downvote"
               className={`transition-all active:scale-90 ${post.viewerVote === -1 ? "text-rose-400 drop-shadow-[0_0_8px_rgba(251,113,133,0.5)]" : "text-white/40 hover:text-white/80"}`}
             >
               <ArrowDownCircle className="w-[18px] h-[18px]" />
@@ -389,6 +398,7 @@ export default function PostCard({ post, onVote, onPollVote, onReport, onWhisper
         <div className="flex items-center gap-3">
           <button
             onClick={handleReport}
+            aria-label={post.viewerReported ? "Unflag post" : "Flag post"}
             className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider transition-colors ${
               post.viewerReported
                 ? "border-amber-500/30 bg-amber-500/10 text-amber-200"

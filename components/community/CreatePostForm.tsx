@@ -302,7 +302,7 @@ export default function CreatePostForm({
                 <div className="mt-5 grid gap-5 md:grid-cols-2">
                   <input
                     type="text"
-                    placeholder="A sharp title..."
+                    placeholder={mode === "whisper" ? "The Tea (A sharp title)..." : "A sharp title..."}
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     className={`w-full rounded-[16px] border border-white/[0.06] bg-black/40 px-5 py-4 text-lg font-medium text-white outline-none transition-all placeholder:text-white/20 ${
@@ -316,7 +316,7 @@ export default function CreatePostForm({
 
                   <input
                     type="text"
-                    placeholder="Subject or course tag, e.g. DBMS / Mechanics"
+                    placeholder={mode === "whisper" ? "Target/Context (e.g. CS Dept, Hostel A) [Optional]" : "Subject or course tag, e.g. DBMS / Mechanics"}
                     value={subjectTag}
                     onChange={(e) => setSubjectTag(e.target.value)}
                     className={`w-full rounded-[16px] border border-white/[0.06] bg-black/40 px-5 py-4 text-[14px] text-white outline-none transition-all placeholder:text-white/20 ${
@@ -330,7 +330,7 @@ export default function CreatePostForm({
                 </div>
 
                 <textarea
-                  placeholder="What happened, what is the issue, or what should people know?"
+                  placeholder={mode === "whisper" ? "Spill the details... What's actually going on?" : "What happened, what is the issue, or what should people know?"}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   className={`mt-5 min-h-[160px] w-full resize-y rounded-[16px] border border-white/[0.06] bg-black/40 p-5 text-[14px] leading-relaxed text-white/90 outline-none transition-all placeholder:text-white/20 ${

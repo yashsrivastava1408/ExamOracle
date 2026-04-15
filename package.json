@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test test/community-policy.test.mjs test/prep-signals.test.mjs"
+    "test": "node --test test/community-policy.test.mjs test/prep-signals.test.mjs test/gemini-fallback.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",

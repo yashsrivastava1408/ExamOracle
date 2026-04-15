@@ -9,6 +9,21 @@ interface FlashcardsProps {
     flashcards: Flashcard[];
 }
 
+function getModeLabel(mode?: Flashcard["mode"]) {
+    switch (mode) {
+        case "comparison":
+            return "Comparison";
+        case "step-order":
+            return "Step Order";
+        case "fact-recall":
+            return "Fact Recall";
+        case "why-it-matters":
+            return "Why It Matters";
+        default:
+            return "Definition";
+    }
+}
+
 export default function Flashcards({ flashcards }: FlashcardsProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isFlipped, setIsFlipped] = useState(false);
@@ -88,6 +103,9 @@ export default function Flashcards({ flashcards }: FlashcardsProps) {
                         <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/30">
                             Quick Card
                         </div>
+                        <div className="mt-2 inline-flex rounded-full border border-indigo-400/20 bg-indigo-400/10 px-2 py-1 text-[9px] font-bold uppercase tracking-widest text-indigo-200/80">
+                            {getModeLabel(card.mode)}
+                        </div>
                         <div className="mt-2 text-sm font-semibold leading-relaxed text-white">
                             {card.front}
                         </div>
@@ -97,29 +115,62 @@ export default function Flashcards({ flashcards }: FlashcardsProps) {
 
             {!isGridView ? (
                 <div className="flex flex-col items-center max-w-2xl mx-auto w-full">
-                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30 mb-6 bg-white/[0.03] px-3 py-1 rounded-full border border-white/[0.05]">
-                        Card {currentIndex + 1} of {flashcards.length}
+                    {/* Mastery Bar */}
+                    <div className="w-full max-w-sm mb-12">
+                        <div className="flex justify-between items-end mb-2">
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Your Progress</span>
+                            <span className="text-xs font-bold text-indigo-400">{Math.round(((currentIndex + 1) / flashcards.length) * 100)}%</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                            <motion.div 
+                                className="h-full bg-gradient-to-r from-indigo-600 via-indigo-400 to-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"
+                                initial={{ width: 0 }}
+                                animate={{ width: `${((currentIndex + 1) / flashcards.length) * 100}%` }}
+                                transition={{ type: "spring", bounce: 0, duration: 1 }}
+                            />
+                        </div>
                     </div>
 
-                    <div
-                        className="w-full aspect-[4/3] sm:aspect-[16/9] perspective-1000 mb-8 cursor-pointer group"
-                        onClick={toggleFlip}
-                    >
+                    <div className="relative w-full max-w-md aspect-[4/3] sm:aspect-[16/10] perspective-2000 mb-12 cursor-pointer group">
+                        {/* 3D Stack Effect (Cards behind) */}
+                        <div className="absolute inset-0 translate-y-4 scale-[0.92] opacity-20 bg-[#03060c] rounded-[2.5rem] border border-white/10 blur-[2px]" />
+                        <div className="absolute inset-0 translate-y-2 scale-[0.96] opacity-40 bg-[#03060c] rounded-[2.5rem] border border-white/10 blur-[1px]" />
+                        
                         <motion.div
-                            className={`relative w-full h-full transition-all duration-500 transform-style-3d shadow-2xl ${isFlipped ? "rotate-y-180" : ""}`}
-                            animate={{ rotateY: isFlipped ? 180 : 0 }}
-                            transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                            className={`relative w-full h-full transition-all duration-700 transform-style-3d shadow-2xl ${isFlipped ? "rotate-y-180" : ""}`}
+                            animate={{ 
+                                rotateY: isFlipped ? 180 : 0,
+                                z: isFlipped ? 50 : 0
+                            }}
+                            transition={{ type: "spring", stiffness: 150, damping: 20 }}
+                            onClick={toggleFlip}
                         >
-                            <div className="absolute w-full h-full backface-hidden rounded-[2rem] bg-gradient-to-br from-white/[0.05] to-white/[0.01] border border-white/[0.1] flex flex-col items-center justify-center p-8 sm:p-12 text-center group-hover:border-white/20 transition-colors">
-                                <span className="absolute top-6 left-6 text-[10px] font-bold uppercase tracking-widest text-indigo-400/50">FRONT</span>
-                                <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-4 leading-tight">{currentCard.front}</h3>
-                                <span className="absolute bottom-6 text-[9px] font-semibold uppercase tracking-[0.2em] text-white/20 p-2 border border-white/10 rounded-lg">Click to reveal</span>
+                            {/* Front Side */}
+                            <div className="absolute w-full h-full backface-hidden rounded-[2.5rem] bg-gradient-to-br from-white/[0.08] to-white/[0.01] border border-white/[0.15] flex flex-col items-center justify-center p-10 sm:p-14 text-center group-hover:border-white/30 transition-all duration-500 shadow-[inset_0_0_40px_rgba(255,255,255,0.02)]">
+                                <div className="absolute top-8 left-10 flex items-center gap-2">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
+                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400/70">Flashcard</span>
+                                </div>
+                                <span className="absolute top-8 right-10 rounded-xl border border-indigo-500/20 bg-indigo-500/10 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-indigo-200">
+                                    {getModeLabel(currentCard.mode)}
+                                </span>
+                                <h3 className="text-3xl sm:text-4xl font-bold tracking-tight text-white mb-6 leading-tight select-none">
+                                    {currentCard.front}
+                                </h3>
+                                <div className="absolute bottom-8 px-4 py-2 rounded-2xl border border-white/5 bg-white/5 flex items-center gap-3 group/hint">
+                                    <Maximize2 className="w-3 h-3 text-white/30 group-hover/hint:text-white transition-colors" />
+                                    <span className="text-[9px] font-black uppercase tracking-[0.25em] text-white/20 group-hover/hint:text-white/60 transition-colors">Show Answer</span>
+                                </div>
                             </div>
 
-                            <div className="absolute w-full h-full backface-hidden rounded-[2rem] bg-gradient-to-br from-indigo-500/[0.05] to-purple-500/[0.02] border border-indigo-500/20 rotate-y-180 flex flex-col p-8 sm:p-12 justify-center shadow-[inset_0_0_80px_rgba(99,102,241,0.05)]">
-                                <span className="absolute top-6 right-6 text-[10px] font-bold uppercase tracking-widest text-emerald-400/50">BACK</span>
-                                <div className="overflow-y-auto w-full max-h-full scrollbar-hide text-center sm:text-left">
-                                    <p className="text-lg sm:text-xl font-medium text-white/90 leading-relaxed">
+                            {/* Back Side */}
+                            <div className="absolute w-full h-full backface-hidden rounded-[2.5rem] bg-[#070b14] border border-indigo-500/30 rotate-y-180 flex flex-col p-10 sm:p-14 justify-center shadow-[inset_0_0_100px_rgba(99,102,241,0.08)]">
+                                <div className="absolute top-8 right-10 flex items-center gap-2">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-400/70">Correct Answer</span>
+                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                </div>
+                                <div className="overflow-y-auto w-full max-h-full no-scrollbar text-center">
+                                    <p className="text-xl sm:text-2xl font-medium text-white/90 leading-relaxed tracking-tight select-none">
                                         {currentCard.back}
                                     </p>
                                 </div>
@@ -127,24 +178,24 @@ export default function Flashcards({ flashcards }: FlashcardsProps) {
                         </motion.div>
                     </div>
 
-                    <div className="flex items-center justify-between w-full max-w-sm gap-4">
+                    <div className="flex items-center justify-center w-full max-w-md gap-4">
                         <button
                             onClick={prevCard}
-                            className="flex-1 flex items-center justify-center py-3 rounded-xl border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] transition-colors"
+                            className="w-14 h-14 flex items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] hover:border-white/20 transition-all"
                         >
-                            <ChevronLeft className="w-5 h-5" />
+                            <ChevronLeft className="w-5 h-5 text-white/40" />
                         </button>
                         <button
                             onClick={toggleFlip}
-                            className="flex-[2] py-3 rounded-xl bg-white text-black font-semibold text-sm hover:bg-white/90 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                            className="flex-1 h-14 rounded-2xl bg-white text-black font-black text-[11px] uppercase tracking-[0.25em] hover:bg-cyan-50 transition-all shadow-[0_0_30px_rgba(255,255,255,0.15)] active:scale-[0.98]"
                         >
-                            Flip Card
+                            {isFlipped ? "Next Card" : "Flip Card"}
                         </button>
                         <button
                             onClick={nextCard}
-                            className="flex-1 flex items-center justify-center py-3 rounded-xl border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] transition-colors"
+                            className="w-14 h-14 flex items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] hover:border-white/20 transition-all"
                         >
-                            <ChevronRight className="w-5 h-5" />
+                            <ChevronRight className="w-5 h-5 text-white/40" />
                         </button>
                     </div>
                 </div>
@@ -178,6 +229,9 @@ function FlashcardGridItem({ card, index }: { card: Flashcard; index: number }) 
             >
                 <div className="absolute w-full h-full backface-hidden rounded-2xl bg-white/[0.02] border border-white/[0.08] flex items-center justify-center p-6 text-center hover:bg-white/[0.04]">
                     <span className="absolute top-4 left-4 text-[9px] font-bold uppercase tracking-widest text-white/20">#{index + 1}</span>
+                    <span className="absolute top-4 right-4 rounded-full border border-indigo-400/20 bg-indigo-400/10 px-2 py-1 text-[9px] font-bold uppercase tracking-widest text-indigo-200/80">
+                        {getModeLabel(card.mode)}
+                    </span>
                     <h4 className="text-lg font-bold text-white leading-tight">{card.front}</h4>
                 </div>
 
