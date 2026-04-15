@@ -56,8 +56,8 @@ export async function POST(
           aliasId: alias.id,
         },
       });
-    } catch (error: any) {
-      if (error?.code === "P2002") {
+    } catch (error: unknown) {
+      if (error && typeof error === "object" && "code" in error && error.code === "P2002") {
         return NextResponse.json(
           { error: "You have already voted on this poll" },
           { status: 400 }

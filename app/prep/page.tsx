@@ -3,26 +3,20 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
-import {
-    Zap,
+import { 
+    RefreshCw, 
+    BookOpen, 
+    Zap, 
+    Activity, 
+    Cpu, 
+    X, 
+    BrainCircuit,
+    CheckCircle2,
+    ShieldCheck,
     Target,
     Layers,
-    CheckCircle2,
-    BookOpen,
-    ChevronLeft,
-    RefreshCw,
-    AlertTriangle,
-    Cpu,
-    BrainCircuit,
     Radar,
-    Gauge,
     FileText,
-    History,
-    ArrowUpRight,
-    Share2,
-    X,
-    Activity,
-    ShieldCheck,
     Globe,
     Sparkles
 } from "lucide-react";
@@ -39,8 +33,6 @@ import { GeneratedContent } from "@/types";
 
 type ActiveTab = "oracle" | "flashcards" | "quiz" | "summary";
 
-const LAST_RESULT_KEY = "examprep_last_result";
-const HISTORY_KEY = "examprep_history";
 const MAX_HISTORY_ITEMS = 6;
 
 export default function PrepPage() {
@@ -52,7 +44,6 @@ export default function PrepPage() {
     );
     
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const [result, setResult] = useState<GeneratedContent | null>(null);
     const [lastNotes, setLastNotes] = useState("");
     const [activeTab, setActiveTab] = useState<ActiveTab | null>(null);
@@ -63,7 +54,6 @@ export default function PrepPage() {
 
     const handleSubmit = async (notes: string) => {
         setIsLoading(true);
-        setError(null);
         setResult(null);
         setLastNotes(notes);
 
@@ -84,9 +74,7 @@ export default function PrepPage() {
             setActiveTab(null);
             persistSession(data.data);
         } catch (err) {
-            setError(
-                err instanceof Error ? err.message : "Something went wrong. Please try again."
-            );
+            console.error(err);
         } finally {
             setIsLoading(false);
         }
@@ -488,7 +476,7 @@ export default function PrepPage() {
                                                 {result.topicName}
                                             </h2>
                                             <p className="text-xl text-white/30 font-light leading-relaxed italic-none">
-                                                We've successfully processed your notes. Choose a study module below to start learning.
+                                                We&apos;ve successfully processed your notes. Choose a study module below to start learning.
                                             </p>
                                         </div>
                                         <div className="flex flex-col gap-4 shrink-0">

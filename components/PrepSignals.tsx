@@ -3,15 +3,11 @@
 import { useState } from "react";
 import {
   Flame,
-  Radar,
   ScanSearch,
   Share2,
   Sparkles,
   Trophy,
   Activity,
-  Cpu,
-  Layers,
-  Zap
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { GeneratedContent } from "@/types";

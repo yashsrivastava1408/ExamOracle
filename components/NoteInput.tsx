@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import { CopyPlus, Sparkles, FileText, UploadCloud, AlertTriangle, X, Mail, CheckCircle } from "lucide-react";
+import { Sparkles, FileText, UploadCloud, AlertTriangle, X, Mail, CheckCircle } from "lucide-react";
 
 // Dynamically import pdf.js to keep initial bundle size down and avoid server-side issues
 const loadPdfJs = async () => {

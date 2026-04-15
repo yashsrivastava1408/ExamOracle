@@ -7,7 +7,6 @@ interface SummaryProps {
     summary: string;
     keyTakeaways: string[];
     mistakeTraps: string[];
-    mustMemorizeFacts: string[];
     summaryBlocks: {
         coreIdea: string;
         processSteps: string;
@@ -33,7 +32,6 @@ export default function Summary({
     summary,
     keyTakeaways,
     mistakeTraps,
-    mustMemorizeFacts,
     summaryBlocks,
     rapidRevision,
     difficultyRating,

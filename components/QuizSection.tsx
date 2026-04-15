@@ -3,7 +3,7 @@
 import { MCQQuestion } from "@/types";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, Circle, HelpCircle, XCircle, Trophy, RefreshCw, ArrowRight, ChevronRight, Star } from "lucide-react";
+import { CheckCircle2, XCircle, ChevronRight, HelpCircle, Trophy, RefreshCw } from "lucide-react";
 
 interface QuizSectionProps {
     questions: MCQQuestion[];

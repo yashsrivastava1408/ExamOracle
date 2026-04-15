@@ -31,14 +31,6 @@ const subjects = [
   "EVS",
 ];
 
-const librarySpots = [
-  "Central Library 2F",
-  "Knowledge Block Reading Hall",
-  "APJ Library Side Wing",
-  "Mechanical Block Quiet Corner",
-  "Hostel Study Lounge A",
-];
-
 const postTemplates = [
   {
     signalType: "warning",

@@ -2,7 +2,7 @@
 
 import { PostCardSkeleton } from "@/components/ui/SkeletonLoader";
 import { useToaster } from "@/components/ui/Toaster";
-import { startTransition, useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import CreatePostForm from "@/components/community/CreatePostForm";
 import PostCard, { Post } from "@/components/community/PostCard";
 import CommentThread, { CommunityComment } from "@/components/community/CommentThread";
@@ -39,7 +39,7 @@ export default function WhisperPage() {
   const [threadError, setThreadError] = useState<string | null>(null);
   const { toast } = useToaster();
 
-  const fetchPosts = async (sort: CommunitySort, silent = false) => {
+  const fetchPosts = useCallback(async (sort: CommunitySort, silent = false) => {
     if (silent) {
       setIsRefreshing(true);
     } else {
@@ -60,18 +60,15 @@ export default function WhisperPage() {
       }
 
       setPosts(data);
-      if (!selectedPost && data.length > 0) {
-        // setSelectedPost(data[0]); // Optional: auto-select first post
-      }
     } catch (error) {
       setFeedError(error instanceof Error ? error.message : "Failed to load whispers");
     } finally {
       setLoading(false);
       setIsRefreshing(false);
     }
-  };
+  }, []);
 
-  const fetchComments = async (postId: string) => {
+  const fetchComments = useCallback(async (postId: string) => {
     setCommentsLoading(true);
     setThreadError(null);
 
@@ -92,7 +89,7 @@ export default function WhisperPage() {
     } finally {
       setCommentsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     const bootstrap = async () => {
@@ -122,7 +119,7 @@ export default function WhisperPage() {
     if (!showSplash) {
       fetchPosts(sortMode, false);
     }
-  }, [showSplash, sortMode]);
+  }, [showSplash, sortMode, fetchPosts]);
 
   useEffect(() => {
     if (!selectedPost) {
@@ -131,10 +128,9 @@ export default function WhisperPage() {
     }
 
     fetchComments(selectedPost.id);
-  }, [selectedPost]);
+  }, [selectedPost, fetchComments]);
 
   const handleVote = async (id: string, action: "upvote" | "downvote") => {
-    // Optimistic Update
     const originalPosts = [...posts];
     const originalSelectedPost = selectedPost;
 
@@ -190,7 +186,6 @@ export default function WhisperPage() {
   };
 
   const handlePollVote = () => {
-     // No polls in gossip section for now
   };
 
   const handleWhisperVote = async (postId: string, value: "TRUE" | "CAP" | "IDK") => {
@@ -303,7 +298,6 @@ export default function WhisperPage() {
 
   return (
     <div className="relative min-h-screen bg-[#0a0118] pb-20 font-sans text-white selection:bg-fuchsia-500/30 overflow-x-hidden">
-      {/* Aesthetic Background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-[radial-gradient(circle,rgba(255,0,122,0.08)_0%,transparent_70%)] blur-[120px]" />
         <div className="absolute top-[20%] right-[-10%] w-[40%] h-[60%] rounded-full bg-[radial-gradient(circle,rgba(125,0,255,0.06)_0%,transparent_70%)] blur-[120px]" />
@@ -327,7 +321,6 @@ export default function WhisperPage() {
         />
       )}
 
-      {/* Navigation */}
       <div className="fixed left-0 top-0 z-50 w-full border-b border-white/[0.05] bg-[#0d0221]/70 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <Link href="/community" className="flex items-center gap-2 text-white/50 transition-colors hover:text-white">
@@ -381,7 +374,6 @@ export default function WhisperPage() {
         )}
         <div className="grid grid-cols-1 xl:grid-cols-[300px_1fr_300px] gap-8 items-start">
           
-          {/* Sidebar Left: Gossip King/Queen */}
           <aside className="hidden xl:flex flex-col gap-6 sticky top-28 h-[calc(100vh-120px)]">
             <div className="rounded-[32px] border border-fuchsia-500/10 bg-[#0d0221]/40 p-8 backdrop-blur-2xl shadow-2xl relative overflow-hidden">
                <div className="absolute -top-10 -right-10 w-32 h-32 bg-fuchsia-500/10 rounded-full blur-[40px]" />
@@ -414,7 +406,7 @@ export default function WhisperPage() {
             <div className="rounded-[32px] border border-violet-500/10 bg-[#0d0221]/40 p-8 backdrop-blur-2xl shadow-2xl overflow-hidden relative">
                <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-violet-400/70 mb-6">Top Secrets</h3>
                <div className="space-y-4">
-                  {posts.slice(0, 3).map((p, i) => (
+                  {posts.slice(0, 3).map((p) => (
                     <div key={p.id} className="group cursor-pointer">
                       <p className="text-xs text-white/60 line-clamp-2 leading-relaxed group-hover:text-white transition-colors">{p.title}</p>
                       <div className="mt-2 text-[9px] text-fuchsia-500/50 uppercase font-bold tracking-widest">{p.upvotes} Heat</div>
@@ -425,7 +417,6 @@ export default function WhisperPage() {
             </div>
           </aside>
 
-          {/* Central Feed */}
           <main className="flex flex-col items-center w-full max-w-4xl mx-auto">
             <section className="w-full text-center mb-12">
                <motion.div

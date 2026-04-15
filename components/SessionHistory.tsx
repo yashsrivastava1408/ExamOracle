@@ -2,7 +2,7 @@
 
 import { GeneratedContent } from "@/types";
 import { motion } from "framer-motion";
-import { Clock3, RotateCcw, Trash2, Archive, Hash, Calendar, ChevronRight } from "lucide-react";
+import { Clock3, RotateCcw, ChevronRight } from "lucide-react";
 
 export interface SessionHistoryEntry {
     id: string;
@@ -19,7 +19,6 @@ interface SessionHistoryProps {
 export default function SessionHistory({
     entries,
     onRestore,
-    onClear,
 }: SessionHistoryProps) {
     if (entries.length === 0) {
         return null;

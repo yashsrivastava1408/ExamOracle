@@ -57,6 +57,7 @@ function normalizePostPayload<T extends {
   votes?: Array<{ aliasId: string; value: number }>;
   reports?: Array<{ aliasId: string }>;
   pollVotes?: Array<{ pollOptionId: string }>;
+  whisperVotes?: Array<{ value: string; aliasId: string }>;
   alias: { name: string; posts?: Array<{ id: string }> };
 }>(post: T, aliasId?: string) {
   const { alias, ...rest } = post;
@@ -79,19 +80,19 @@ function normalizePostPayload<T extends {
         ? null
         : (rest.pollVotes?.[0]?.pollOptionId ?? null),
     whisperStats: (() => {
-      const votes = (rest as any).whisperVotes || [];
+      const votes = rest.whisperVotes || [];
       const total = votes.length;
       return {
         total,
-        true: votes.filter((v: any) => v.value === "TRUE").length,
-        cap: votes.filter((v: any) => v.value === "CAP").length,
-        idk: votes.filter((v: any) => v.value === "IDK").length,
+        true: votes.filter((v) => v.value === "TRUE").length,
+        cap: votes.filter((v) => v.value === "CAP").length,
+        idk: votes.filter((v) => v.value === "IDK").length,
       };
     })(),
     viewerWhisperVote:
       aliasId == null
         ? null
-        : ((rest as any).whisperVotes?.find((v: any) => v.aliasId === aliasId)?.value ?? null),
+        : (rest.whisperVotes?.find((v) => v.aliasId === aliasId)?.value ?? null),
   };
 }
 
@@ -156,7 +157,7 @@ export async function fetchCommunityPosts(input?: {
             select: { aliasId: true },
           }
         : false,
-      // @ts-ignore
+      // @ts-expect-error: Prisma dynamic include type mismatch
       pollVotes: input?.aliasId
         ? {
             where: { aliasId: input.aliasId },
@@ -167,7 +168,7 @@ export async function fetchCommunityPosts(input?: {
   });
 
   const sorted = sortCommunityPosts(posts, input?.sort ?? "latest");
-  // @ts-ignore
+  // @ts-expect-error: Prisma dynamic include type mismatch
   return sorted.map((post) => normalizePostPayload(post, input?.aliasId));
 }
 
@@ -278,7 +279,7 @@ export async function createCommunityPost(input: {
         where: { aliasId },
         select: { aliasId: true },
       },
-      // @ts-ignore
+      // @ts-expect-error: Prisma dynamic include type mismatch
       pollVotes: {
         where: { aliasId },
         select: { pollOptionId: true },
@@ -286,7 +287,7 @@ export async function createCommunityPost(input: {
     },
   });
 
-  // @ts-ignore
+  // @ts-expect-error: Prisma dynamic include type mismatch
   return normalizePostPayload(post, aliasId);
 }
 
@@ -373,7 +374,7 @@ export async function createPostComment(input: {
     },
   });
 
-  // @ts-ignore
+  // @ts-expect-error: Prisma dynamic include type mismatch
   return normalizeCommentPayload(comment, aliasId);
 }
 
@@ -406,14 +407,14 @@ async function applyVoteToPost(input: {
           where: { aliasId: input.aliasId },
           select: { aliasId: true },
         },
-        // @ts-ignore
+        // @ts-expect-error: Prisma dynamic include type mismatch
         pollVotes: {
           where: { aliasId: input.aliasId },
           select: { pollOptionId: true },
         },
       },
     });
-    // @ts-ignore
+    // @ts-expect-error: Prisma dynamic include type mismatch
     return post ? normalizePostPayload(post, input.aliasId) : null;
   }
 
@@ -449,7 +450,7 @@ async function applyVoteToPost(input: {
           where: { aliasId: input.aliasId },
           select: { aliasId: true },
         },
-        // @ts-ignore
+        // @ts-expect-error: Prisma dynamic include type mismatch
         pollVotes: {
           where: { aliasId: input.aliasId },
           select: { pollOptionId: true },
@@ -458,7 +459,7 @@ async function applyVoteToPost(input: {
     });
   });
 
-  // @ts-ignore
+  // @ts-expect-error: Prisma dynamic include type mismatch
   return normalizePostPayload(post, input.aliasId);
 }
 
@@ -612,7 +613,7 @@ export async function reportPost(input: { postId: string; aliasId: string }) {
           where: { aliasId },
           select: { aliasId: true },
         },
-        // @ts-ignore
+        // @ts-expect-error: Prisma dynamic include type mismatch
         pollVotes: {
           where: { aliasId },
           select: { pollOptionId: true },
@@ -620,7 +621,7 @@ export async function reportPost(input: { postId: string; aliasId: string }) {
       },
     });
 
-    // @ts-ignore
+    // @ts-expect-error: Prisma dynamic include type mismatch
     return post ? normalizePostPayload(post, aliasId) : null;
   }
 
@@ -681,7 +682,7 @@ export async function reportPost(input: { postId: string; aliasId: string }) {
           where: { aliasId },
           select: { aliasId: true },
         },
-        // @ts-ignore
+        // @ts-expect-error: Prisma dynamic include type mismatch
         pollVotes: {
           where: { aliasId },
           select: { pollOptionId: true },
@@ -690,7 +691,7 @@ export async function reportPost(input: { postId: string; aliasId: string }) {
     });
 
     void report;
-    // @ts-ignore
+    // @ts-expect-error: Prisma dynamic include type mismatch
     return freshPost ? normalizePostPayload(freshPost, aliasId) : null;
   });
 }
@@ -847,7 +848,7 @@ export async function castWhisperVote(input: {
           where: { aliasId },
           select: { aliasId: true },
         },
-        // @ts-ignore
+        // @ts-expect-error: Prisma dynamic include type mismatch
         pollVotes: {
           where: { aliasId },
           select: { pollOptionId: true },
@@ -856,6 +857,6 @@ export async function castWhisperVote(input: {
     });
   });
 
-  // @ts-ignore
+  // @ts-expect-error: Prisma dynamic include type mismatch
   return post ? normalizePostPayload(post, aliasId) : null;
 }
